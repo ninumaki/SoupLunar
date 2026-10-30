@@ -126,10 +126,9 @@ class FastRMSNorm(torch.autograd.Function):
             n_cols,
             BLOCK_SIZE=ctx.BLOCK_SIZE,
         )
-        # dweight calculation: sum(grad * norm_x)
-        # norm_x = x * rrms[:, None]
-        norm_x = x_2d * rrms.unsqueeze(-1).to(x_2d.dtype)
-        dweight = (grad_2d * norm_x).sum(dim=0).to(weight.dtype)
+        # dweight calculation in fp32 to match PyTorch autograd precision: sum(grad * norm_x)
+        norm_x = x_2d.float() * rrms.unsqueeze(-1)
+        dweight = (grad_2d.float() * norm_x).sum(dim=0).to(weight.dtype)
         return dx.reshape(ctx.shape), dweight, None
 
 
