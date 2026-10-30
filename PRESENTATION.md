@@ -98,4 +98,4 @@
 * **Жад чемпионы:** 3.39 есе жад үнемдеу ($m = 3.390x$).
 * **Ресурс сілтемелері:**
   * Ашық Kaggle Notebook: [Kaggle Run](https://www.kaggle.com/code/bolebaybekbolat/notebookc88b010a21)
-  * Ресми GitHub репозиторий: [ninumaki/SoupLunar](https://github.com/ninumaki/SoupLunar)
+  * Ресми GitHub репозиторий: [BAITC-Hacks/hack-e24e6808-lunarteam](https://github.com/BAITC-Hacks/hack-e24e6808-lunarteam) (және [ninumaki/SoupLunar](https://github.com/ninumaki/SoupLunar))
