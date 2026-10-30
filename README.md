@@ -1,7 +1,7 @@
 # Soup Kernel Challenge — Decentrathon 6.0 🚀
 ### Оңтайландырылған Triton Кернелдері арқылы Soup Fine-Tuning Жеделдету мен Жадты Үнемдеу
 
-> **Команда:** LunarTeam (Тоғжан, Бекболат, Нұрдәулет, Дархан)  
+> **Команда:** LunarTeam (Бекболат, Нұрдәулет, Тоғжан, Дархан)  
 > **Миссия:** Акысыз Kaggle Tesla T4 GPU-да `Qwen2.5-1.5B-Instruct` моделін LoRA арқылы оқытуды жеделдету, бейнежад (VRAM) шығынын еселеп азайту және барлық 10 тексеруден (harness checks) 100% өту.
 
 ---
@@ -13,7 +13,7 @@
 
 ---
 
-# 1-БӨЛІМ: НЕ ІСТЕЛДІ (WHAT WAS DONE) — 5 ҰПАЙ
+# 1-БӨЛІМ: НЕ ІСТЕЛДІ (WHAT WAS DONE) 
 
 ### 1.1 Мәселені анықтау және Шаг Профилін Талдау (Profiling & Bottlenecks)
 Тілдік модельдерді (LLM) бір ғана тегін GPU-да (Kaggle Tesla T4, 15 ГБ GDDR6, bfloat16 қолдауы жоқ, тек FP16) оқыту кезінде ең басты тосқауылдар — **жадтың тапшылығы** мен **жад өткізу қабілетіне тірелу (Memory Bandwidth Bound)**.
@@ -139,7 +139,7 @@ $$\text{SwiGLU}(x) = \text{SiLU}(\text{Gate}(x)) \odot \text{Up}(x) = (\text{gat
 
 ---
 
-# 2-БӨЛІМ: ҚАЛАЙ ІСКЕ ҚОСУ КЕРЕК (HOW TO RUN) — 5 ҰПАЙ
+# 2-БӨЛІМ: ҚАЛАЙ ІСКЕ ҚОСУ КЕРЕК (HOW TO RUN)
 
 Қазылар алқасына және кез келген зерттеушіге нәтижені ешқандай сұрақсыз, бірден қайталауға арналған қадамдық нұсқаулық.
 
@@ -205,7 +205,7 @@ python harness/score.py runs/result.json
 
 ---
 
-# 3-БӨЛІМ: НӘТИЖЕЛЕР ЖӘНЕ ШЕКТЕУЛЕР (RESULTS & LIMITATIONS) — 5 ҰПАЙ
+# 3-БӨЛІМ: НӘТИЖЕЛЕР ЖӘНЕ ШЕКТЕУЛЕР (RESULTS & LIMITATIONS) 
 
 ### 3.1 Базалық Шешіммен Салыстыру Кестесі (Benchmark Results)
 
@@ -247,10 +247,10 @@ python harness/score.py runs/result.json
 ---
 
 ## 👩‍💻 Команда Құрамы және Рөлдер (LunarTeam)
-* **Тоғжан (Role 4):** Техникалық Құжаттама, Аналитика, Kaggle Релиз және Питч (Team Lead / Captain).
 * **Бекболат (Role 1):** Техникалық Лид & GPU Kernel Архитекторы (Fused Chunked Cross-Entropy, NF4 Dequantization/MatMul).
 * **Нұрдәулет (Role 2):** Triton Element-Wise Kernels & Monkey-Patching Инженері (Fused RMSNorm, Fused SwiGLU/RoPE, `apply()`).
 * **Дархан (Role 3):** Batch Optimization, Хакатон Harness & Тестілеу Инженері (Dynamic Unpadding, PyTest 79 тексеруі, `check_rules.py`).
+* **Тоғжан (Role 4):** Техникалық Құжаттама, Аналитика, Kaggle Релиз және Питч (Team Lead / Captain).
 
 ---
 *Лицензия: Apache-2.0. Барлық авторлық және байқау ережелері сақталған.*
