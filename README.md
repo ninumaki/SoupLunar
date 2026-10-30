@@ -9,6 +9,7 @@
 
 ## 📌 Түйінді Сілтемелер (Quick Links & Submission Deliverables)
 * 🔗 **Ресми Хакатон Репозиторийі (Platform Repo):** [BAITC-Hacks/hack-e24e6808-lunarteam](https://github.com/BAITC-Hacks/hack-e24e6808-lunarteam.git)
+* 🔗 **Ашық GitHub Репозиторийі (Public Clone for Kaggle):** [ninumaki/SoupLunar](https://github.com/ninumaki/SoupLunar.git)
 * 🔗 **Ашық Kaggle Дәптері (Public Kaggle Notebook):** [Kaggle Notebook Run](https://www.kaggle.com/code/bolebaybekbolat/notebookc88b010a21) *(Tesla T4 GPU x2, 10/10 PASS, соңғы `COMMIT` хэшімен сақталған нұсқа)*
 * 📊 **Презентация (Слайдтар):** [PRESENTATION.md](./PRESENTATION.md) және `presentation.pptx`
 * 🎥 **3-Минуттық Демо Бейнежазба Сценарийі:** [DEMO_VIDEO_SCRIPT.md](./DEMO_VIDEO_SCRIPT.md)
