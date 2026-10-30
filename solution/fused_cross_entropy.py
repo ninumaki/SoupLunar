@@ -42,7 +42,7 @@ except ImportError:
     tl = _TritonStub()  # type: ignore[assignment]
 
 BLOCK_SIZE = 2048
-CHUNK_SIZE = 64
+CHUNK_SIZE = 128
 IGNORE_INDEX = -100
 _PATCHED = False
 
