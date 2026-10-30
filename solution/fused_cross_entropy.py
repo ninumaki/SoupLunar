@@ -100,9 +100,10 @@ def fused_cross_entropy_fwd_kernel(
 
         exp_logits = tl.exp(logits - new_m)
         exp_logits = tl.where(mask, exp_logits, 0.0)
+        safe_logits = tl.where(mask, logits, 0.0)
 
         s_val = s_val * alpha + tl.sum(exp_logits, axis=0)
-        sz_val = sz_val * alpha + tl.sum(logits * exp_logits, axis=0)
+        sz_val = sz_val * alpha + tl.sum(safe_logits * exp_logits, axis=0)
 
         is_new_max = block_max > max_val
         max_val = tl.where(is_new_max, block_max, max_val)
