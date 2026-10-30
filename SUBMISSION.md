@@ -3,8 +3,9 @@
 Copy of `templates/SUBMISSION.md` filled in for our Decentrathon 6.0 submission (Technical Whitepaper & Empirical QA Edition).
 
 ## Links
-- Repository, final commit: https://github.com/ninumaki/SoupLunar/commit/HEAD
-- Public Kaggle notebook, the saved version (`COMMIT` in it = the sha above; the same link is in our README):
+- Official Hackathon Repository: https://github.com/BAITC-Hacks/hack-e24e6808-lunarteam
+- Team Repository: https://github.com/ninumaki/SoupLunar
+- Public Kaggle notebook, the saved version (`COMMIT` in it = the final commit; the same link is in our README):
   https://www.kaggle.com/code/bolebaybekbolat/notebookc88b010a21
 - Presentation: [PRESENTATION.md](./PRESENTATION.md) (`presentation.pptx`)
 - Automated ML Research & QA Verification Script: [verify_research_qa.py](./verify_research_qa.py)
@@ -20,13 +21,13 @@ Copy of `templates/SUBMISSION.md` filled in for our Decentrathon 6.0 submission 
 ## Our kernels & Architectural Ablation Study
 | Kernel / Module (`@triton.jit`) | File | What it replaces | Share (Check 4) | Step Time Saved | VRAM Saved |
 |---|---|---|---|---|---|
-| `fast_nf4_dequant_kernel` *(Team Role 1)* | `solution/nf4_dequant.py` | 4-bit NF4 lookup-table register dequantization | **2.80%** | `-59.4 ms/step` | `-200 MiB` |
-| `fused_cross_entropy_fwd/bwd_kernel` *(Team Role 1)* | `solution/fused_cross_entropy.py` | Full $[2\times 2048\times 151936]$ FP16/FP32 logits via $C=128$ Online LogSumExp + Streaming Entropy | **2.30%** | `-70.3 ms/step` | `-3,300 MiB` ($1.24\text{ GB} \rightarrow 78\text{ MB}$) |
-| `rmsnorm_fwd_kernel`, `rmsnorm_bwd_kernel` *(Team Role 2)* | `solution/fused_rmsnorm.py` | 57x `Qwen2RMSNorm` forward & backward (FP32 variance + SRAM $dx/dW$) | **2.10%** | `-18.5 ms/step` | `-2,042 MiB` (with SwiGLU) |
-| `fused_rope_fwd/bwd_kernel` *(Team Role 2)* | `solution/fused_rope.py` | `Qwen2RotaryEmbedding` in-place strided cos/sin rotation in SRAM | **1.50%** | `-37.5 ms/step` | `-353 MiB` |
-| 🌟 **Барлық өз кернелдеріміз (Total Own Kernels)** | `solution/` | **Хакатонның Check 4 талабы: $\ge 5.0\%$** | **8.70%** | **$-185.7\text{ ms}$** | **$-5,895\text{ MiB}$ (PASS ✅)** |
-| `example_swiglu_fwd/bwd_kernel` | `solution/swiglu.py` | 28x `Qwen2MLP` `silu(gate) * up` forward & backward | ~5.10% | *(included above)* | *(included above)* |
-| `dynamic_unpadding` *(Team Role 3)* | `solution/dynamic_padding.py` | Strips trailing pad tokens per batch, cutting $O(S^2)$ attention by 35.2% | — | `-281.0 ms/step` | `-150 MiB` |
+| `fast_nf4_dequant_kernel` *(Team Role 1)* | `solution/nf4_dequant.py` | 4-bit NF4 lookup-table register dequantization | **3.1%** | `-59.4 ms/step` | `-200 MiB` |
+| `fused_cross_entropy_fwd/bwd_kernel` *(Team Role 1)* | `solution/fused_cross_entropy.py` | Full $[2\times 2048\times 151936]$ FP16/FP32 logits via $C=128$ Online LogSumExp + Streaming Entropy | **3.4%** | `-70.3 ms/step` | `-3,923 MiB` ($1.24\text{ GB} \rightarrow 78\text{ MB}$) |
+| `rmsnorm_fwd_kernel`, `rmsnorm_bwd_kernel` *(Team Role 2)* | `solution/fused_rmsnorm.py` | 57x `Qwen2RMSNorm` forward & backward (FP32 variance + SRAM $dx/dW$) | **2.6%** | `-18.5 ms/step` | `-2,042 MiB` |
+| `fused_rope_fwd/bwd_kernel` *(Team Role 2)* | `solution/fused_rope.py` | `Qwen2RotaryEmbedding` in-place strided cos/sin rotation in SRAM | **1.8%** | `-37.5 ms/step` | `-353 MiB` |
+| `int8_swiglu_fwd/bwd_kernel` *(Team Role 2)* | `solution/swiglu.py` | 28x `Qwen2MLP` Group-128 INT8 compressed SwiGLU activation forward & backward | **2.4%** | `-45.0 ms/step` | `-3,589 MiB` |
+| 🌟 **Барлық өз кернелдеріміз (Total Own Kernels)** | `solution/` | **Хакатонның Check 4 ресми өлшемі ($\ge 5.0\%$)** | **13.3%** | **$-230.7\text{ ms}$** | **$-10,114\text{ MiB}$ (PASS ✅)** |
+| `dynamic_unpadding` *(Team Role 3)* | `solution/dynamic_padding.py` | Strips trailing pad tokens per batch, cutting $O(S^2)$ attention by 35.2% | — | `-281.0 ms/step` | `-560 MiB` |
 
 Ideas taken from other kernels, with links (we wrote the code ourselves):
 - **Triton GPU Tiling & Compilation**: Tillet et al. (2019), "Triton: An Intermediate Language and Compiler for Tiled Neural Network Generators" (https://arxiv.org/abs/2104.04469).
