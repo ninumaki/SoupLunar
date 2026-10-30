@@ -6,10 +6,31 @@ own kernels next to them (keeping the example running is fine) or replace this f
 """
 
 import torch
-import triton
-import triton.language as tl
+
+try:
+    import triton
+    import triton.language as tl
+
+    _HAS_TRITON = True
+except ImportError:
+    _HAS_TRITON = False
+
+    class _TritonStub:
+        constexpr = int
+
+        @staticmethod
+        def jit(fn=None, **_kwargs):
+            return fn if fn is not None else (lambda f: f)
+
+        @staticmethod
+        def cdiv(x: int, y: int) -> int:
+            return (x + y - 1) // y
+
+    triton = _TritonStub()  # type: ignore[assignment]
+    tl = _TritonStub()  # type: ignore[assignment]
 
 BLOCK = 1024
+_PATCHED = False
 
 
 @triton.jit
@@ -68,14 +89,19 @@ def swiglu(gate, up):
 def patch_qwen2_mlp():
     """Send Qwen2MLP.forward through the fused kernel. A class patch works before or after Soup
     builds the model: Python looks the method up on every call."""
+    global _PATCHED
+    if _PATCHED:
+        return
+
     from transformers.models.qwen2 import modeling_qwen2
 
     original = modeling_qwen2.Qwen2MLP.forward
 
     def forward(self, x):
         act = getattr(getattr(self, "config", None), "hidden_act", "silu")
-        if act != "silu" or not x.is_cuda:
+        if not _HAS_TRITON or act != "silu" or not x.is_cuda:
             return original(self, x)
         return self.down_proj(swiglu(self.gate_proj(x), self.up_proj(x)))
 
     modeling_qwen2.Qwen2MLP.forward = forward
+    _PATCHED = True
