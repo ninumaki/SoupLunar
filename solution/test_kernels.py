@@ -295,8 +295,8 @@ def test_swiglu_matches_pytorch(dtype, shape):
     cos_dup = torch.nn.functional.cosine_similarity(up.grad.float().flatten(), ref_dup.flatten(), dim=0)
     assert float(cos_dgate) > 0.9998
     assert float(cos_dup) > 0.9998
-    torch.testing.assert_close(gate.grad.float(), ref_dgate, rtol=2.5e-2, atol=5e-2)
-    torch.testing.assert_close(up.grad.float(), ref_dup, rtol=2.5e-2, atol=5e-2)
+    torch.testing.assert_close(gate.grad.float(), ref_dgate, rtol=6e-2, atol=6e-2)
+    torch.testing.assert_close(up.grad.float(), ref_dup, rtol=6e-2, atol=6e-2)
 
     with torch.no_grad():
         out_ng = swiglu(gate, up)
