@@ -344,7 +344,7 @@ def create_deck():
         "2. Жұмыс істеуіне 20 Ұпай: 10/10 автоматты тексеруден және 79 Soup регрессиялық тестінен өтті.\n"
         "3. Жылдамдық & Жад Ұпайы: 1.23x жеделдету, 2.5 ГБ VRAM үнемдеу, өз кернелдеріміздің үлесі 7.84%.\n"
         "4. Дәлдік: Жасырын қазақша деректерде оқыту сапасы базамен толық сәйкес (Delta = -0.01%).\n\n"
-        "🔗 Kaggle Public Run: kaggle.com/code/togzhan/soup-kernel-challenge-t4\n"
+        "🔗 Kaggle Public Run: kaggle.com/code/ruekdp/notebookd4dc02b276\n"
         "🔗 GitHub Repo: github.com/ninumaki/SoupLunar\n\n"
         "Назарларыңызға рақмет! Сұрақтарыңызға жауап беруге дайынбыз!"
     )

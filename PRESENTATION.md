@@ -96,5 +96,5 @@
 * **Құжаттама:** 15 балл толық кепілдендірілген.
 * **Өнімділік:** 1.23x жеделдету және 2.5 ГБ жадты үнемдеу.
 * **Ресурс сілтемелері:**
-  * Kaggle Notebook: [Kaggle Run](https://www.kaggle.com/code/togzhan/soup-kernel-challenge-t4)
+  * Kaggle Notebook: [Kaggle Run](https://www.kaggle.com/code/ruekdp/notebookd4dc02b276)
   * GitHub Repo: [ninumaki/SoupLunar](https://github.com/ninumaki/SoupLunar)
