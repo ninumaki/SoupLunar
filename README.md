@@ -9,7 +9,6 @@
 ## 📌 Түйінді Сілтемелер (Quick Links)
 * 🔗 **Ашық Kaggle Ноутбугы (Public Notebook):** [Kaggle Notebook Run](https://www.kaggle.com/code/togzhan/soup-kernel-challenge-t4) *(Соңғы `COMMIT` хэшімен сақталған нұсқа)*
 * 🔗 **GitHub Репозиторий және Соңғы Коммит:** [ninumaki/SoupLunar](https://github.com/ninumaki/SoupLunar) ([Соңғы коммит](https://github.com/ninumaki/SoupLunar/commit/HEAD))
-* 🎬 **3-минуттық Демо-бейнебаян:** [YouTube / Google Drive Demo Link](https://youtu.be/demo_placeholder)
 * 📊 **Презентация (Слайдтар):** [Презентация құжаты](./PRESENTATION.md)
 
 ---
@@ -248,7 +247,7 @@ python harness/score.py runs/result.json
 ---
 
 ## 👩‍💻 Команда Құрамы және Рөлдер (LunarTeam)
-* **Тоғжан (Role 4):** Техникалық Құжаттама, Аналитика, Kaggle Релиз, Демо-бейнебаян және Питч (Team Lead / Captain).
+* **Тоғжан (Role 4):** Техникалық Құжаттама, Аналитика, Kaggle Релиз және Питч (Team Lead / Captain).
 * **Бекболат (Role 1):** Техникалық Лид & GPU Kernel Архитекторы (Fused Chunked Cross-Entropy, NF4 Dequantization/MatMul).
 * **Нұрдәулет (Role 2):** Triton Element-Wise Kernels & Monkey-Patching Инженері (Fused RMSNorm, Fused SwiGLU/RoPE, `apply()`).
 * **Дархан (Role 3):** Batch Optimization, Хакатон Harness & Тестілеу Инженері (Dynamic Unpadding, PyTest 79 тексеруі, `check_rules.py`).

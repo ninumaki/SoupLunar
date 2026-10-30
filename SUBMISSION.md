@@ -6,8 +6,7 @@ Copy of `templates/SUBMISSION.md` filled in for our Decentrathon 6.0 submission.
 - Repository, final commit: https://github.com/ninumaki/SoupLunar/commit/HEAD
 - Public Kaggle notebook, the saved version (`COMMIT` in it = the sha above; the same link is in our README):
   https://www.kaggle.com/code/togzhan/soup-kernel-challenge-t4?scriptVersionId=1
-- Demo video (up to 3 minutes): https://youtu.be/demo_placeholder
-- Presentation: https://docs.google.com/presentation/d/demo_placeholder/edit (және репозиторийдегі [PRESENTATION.md](./PRESENTATION.md))
+- Presentation: [PRESENTATION.md](./PRESENTATION.md) (`presentation.pptx`)
 
 ## Team (LunarTeam — 4 people)
 | Name | Role | GitHub | Kaggle | Contact (captain) |
