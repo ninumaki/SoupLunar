@@ -273,7 +273,11 @@ def test_int8_swiglu_autograd_plumbing_cpu(monkeypatch):
 @pytest.mark.parametrize("dtype", [torch.float16, torch.float32])
 @pytest.mark.parametrize("shape", [(4, 512, 8960), (3, 77, 1001)])
 def test_swiglu_matches_pytorch(dtype, shape):
+    import gc
     from solution.swiglu import swiglu
+
+    gc.collect()
+    torch.cuda.empty_cache()
 
     torch.manual_seed(0)
     gate = torch.randn(shape, device="cuda", dtype=dtype, requires_grad=True)
@@ -284,11 +288,13 @@ def test_swiglu_matches_pytorch(dtype, shape):
     ref.backward(grad.float())
     ref_dgate, ref_dup = gate.grad.float(), up.grad.float()
     gate.grad = up.grad = None
+    del ref
+    torch.cuda.empty_cache()
 
     out = swiglu(gate, up)
     out.backward(grad)
     fwd_tol = TOLERANCE[dtype]
-    torch.testing.assert_close(out.float(), ref, rtol=fwd_tol, atol=fwd_tol)
+    torch.testing.assert_close(out.float(), ref_dgate.new_tensor(0.0) if False else None or (torch.nn.functional.silu(gate.float()) * up.float()), rtol=fwd_tol, atol=fwd_tol)
 
     # Backward uses group-128 symmetric INT8 compressed activations (~48.4% VRAM saved)
     cos_dgate = torch.nn.functional.cosine_similarity(gate.grad.float().flatten(), ref_dgate.flatten(), dim=0)
@@ -300,7 +306,11 @@ def test_swiglu_matches_pytorch(dtype, shape):
 
     with torch.no_grad():
         out_ng = swiglu(gate, up)
-        torch.testing.assert_close(out_ng.float(), ref, rtol=fwd_tol, atol=fwd_tol)
+        ref_ng = torch.nn.functional.silu(gate.float()) * up.float()
+        torch.testing.assert_close(out_ng.float(), ref_ng, rtol=fwd_tol, atol=fwd_tol)
+    del gate, up, grad, ref_dgate, ref_dup, out, out_ng
+    gc.collect()
+    torch.cuda.empty_cache()
 
 
 @cuda_only
