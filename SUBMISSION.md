@@ -37,16 +37,16 @@ Ideas taken from other kernels, with links (we wrote the code ourselves):
 ## Results on Kaggle T4 (from `runs/result.json` and `runs/checks.json` of the notebook above)
 | | Base Soup | Ours | Ratio |
 |---|---|---|---|
-| Time of `soup train`, s | 84.11 s | 64.46 s | speedup 1.305x (time x0.766, 20s faster) |
-| Peak GPU memory, MiB | 14,345 MiB | 6,323 MiB | base/ours 2.269x (үнемделген: 8,022 MiB / >8.0 GB!) |
-| Eval loss (public rows) | 2.04967 | 2.04956 | -0.005% vs base (шегі <= 0.5%, сапа жақсарды) |
-| Own kernel time share | 0.0% | 10.1% | PASS (талап: >= 5.0%, екі есе асты) |
+| Time of `soup train`, s | 79.38 s | 65.10 s | speedup 1.219x (time x0.820, 14.3s faster) |
+| Peak GPU memory, MiB | 14,345 MiB | 4,231 MiB | base/ours 3.390x (үнемделген: 10,114 MiB / 10.1 GB!) |
+| Eval loss (public rows) | 2.04970 | 2.04956 | -0.007% vs base (шегі <= 0.5%, сапа жақсарды) |
+| Own kernel time share | 0.0% | 13.3% | PASS (талап: >= 5.0%, 2.6 есе асты) |
 
 - [x] All 10 checks of `harness/check_rules.py` passed (10/10 PASS: ALL CHECKS PASSED: True)
 - [x] README.md rewritten for our solution: what we did, how to run it, results, limits
-- [x] 19 unit tests in `solution/test_kernels.py` passed (19 passed in 15.21s)
-- [x] 79 Soup regression tests in `tests/` passed (79 passed in 0.50s)
-- [x] `verify_research_qa.py` verified convergence (Delta L1 = 0.029%, LSE Entropy gap = 0.216%, SQLite 0 NaN/Inf)
+- [x] 21 unit tests in `solution/test_kernels.py` passed (21 passed in 18.02s)
+- [x] 79 Soup regression tests in `tests/` passed (79 passed in 0.38s)
+- [x] `verify_research_qa.py` verified convergence (Delta L1 = 0.011%, LSE Entropy gap = 0.222%, SQLite 0 NaN/Inf)
 
 ## Presentation covers
 - **Қай операцияны жеделдеттік және неге:** 44% уақыт алатын элементтік операциялар (57x RMSNorm, 28x SwiGLU, RoPE), $O(S^2)$ артық паддинг және $1.24\text{ ГБ}$ логиттер тензорын материализациялайтын Cross-Entropy шығынын жою.
