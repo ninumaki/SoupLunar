@@ -178,10 +178,10 @@ python verify_research_qa.py
 ---
 
 ## 👩‍💻 Команда Құрамы және Рөлдер (LunarTeam)
-* **Бекболат (Role 1 — Tech Lead & GPU Kernel Architect):** Fused Chunked Cross-Entropy + Online LogSumExp/Entropy кернелі, NF4 Dequantization.
+* **Бекболат (Role 1 — Tech Lead, Captain & GPU Kernel Architect):** Fused Chunked Cross-Entropy + Online LogSumExp/Entropy кернелі, NF4 Dequantization.
 * **Нұрдәулет (Role 2 — Triton Element-Wise & Monkey-Patching Engineer):** Fused RMSNorm (`rmsnorm.py`), Fused SwiGLU (`swiglu.py`), RoPE және `solution.apply()` интеграциясы.
 * **Дархан (Role 3 — Batch Optimization & Harness QA Engineer):** Dynamic In-Batch Trailing-Pad Removal, T4 `sm_75` компиляция баптауы, 79 PyTest тестілеуі.
-* **Тоғжан (Role 4 — ML Research Engineer & Quality Assurance Lead / Captain):** Конвергенция мен Шеннон энтропиясын математикалық верификациялау (`verify_research_qa.py`), VRAM & Roofline аналитикалық моделі, SQLite `experiments.db` аудиті, Ablation Study, Technical Whitepaper және Kaggle релизі.
+* **Тоғжан (Role 4 — ML Research Engineer & Quality Assurance Lead):** Конвергенция мен Шеннон энтропиясын математикалық верификациялау (`verify_research_qa.py`), VRAM & Roofline аналитикалық моделі, SQLite `experiments.db` аудиті, Ablation Study, Technical Whitepaper және Kaggle релизі.
 
 ---
 *Лицензия: Apache-2.0. Барлық авторлық және байқау ережелері сақталған.*

@@ -12,8 +12,8 @@ Copy of `templates/SUBMISSION.md` filled in for our Decentrathon 6.0 submission 
 ## Team (LunarTeam — 4 people)
 | Name | Role | GitHub | Kaggle | Contact (captain) |
 |---|---|---|---|---|
-| Тоғжан (Togzhan) | ML Research Engineer & Quality Assurance Lead (Convergence Math, VRAM Roofline, SQLite Audit & Whitepaper) | @ninumaki | @ruekdp | @togzhan_tg (Captain) |
-| Бекболат (Bekbolat) | Техникалық Лид & GPU Kernel Архитекторы (Fused Chunked Cross-Entropy & NF4 Dequant) | @bekbolat | @bekbolat | — |
+| Бекболат (Bekbolat) | Техникалық Лид, Капитан & GPU Kernel Архитекторы (Fused Chunked Cross-Entropy & NF4 Dequant) | @bekbolat | @bekbolat | @bekbolat_tg (Captain) |
+| Тоғжан (Togzhan) | ML Research Engineer & Quality Assurance Lead (Convergence Math, VRAM Roofline, SQLite Audit & Whitepaper) | @ninumaki | @ruekdp | — |
 | Нұрдәулет (Nurdaulet) | Triton Element-Wise Kernels & Monkey-Patching Инженері (RMSNorm, SwiGLU, RoPE, `apply()`) | @nurdaulet | @nurdaulet | — |
 | Дархан (Darkhan) | Batch Optimization, Хакатон Harness & Тестілеу Инженері (Dynamic Padding, 79 PyTest, Rules) | @darkhan | @darkhan | — |
 
