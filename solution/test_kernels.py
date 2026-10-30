@@ -219,6 +219,51 @@ def test_kbit_mixed_precision_keeps_embeddings_and_biases_fp16_and_norms_fp32():
     assert prepared.model.norm.weight.dtype == torch.float32
 
 
+def test_int8_swiglu_autograd_plumbing_cpu(monkeypatch):
+    import solution.swiglu as swiglu_mod
+
+    class _GridCallable:
+        def __init__(self, fn):
+            self._fn = fn
+
+        def __getitem__(self, _grid):
+            return self._fn
+
+    def fake_fwd(
+        gate_c, up_c, out, gate_q, up_q, gate_scale, up_scale,
+        n_elements, n_groups, GROUPS_PER_CTA, GROUP_SIZE, SAVE_QUANT, num_warps=4,
+    ):
+        out.copy_(torch.nn.functional.silu(gate_c.float()) * up_c.float())
+        if SAVE_QUANT:
+            gate_q.zero_()
+            up_q.zero_()
+            gate_scale.fill_(1.0)
+            up_scale.fill_(1.0)
+
+    def fake_bwd(
+        grad_c, gate_q, up_q, gate_scale, up_scale, dgate, dup,
+        n_elements, n_groups, GROUPS_PER_CTA, GROUP_SIZE, num_warps=4,
+    ):
+        assert gate_q.dtype == torch.int8 and up_q.dtype == torch.int8
+        assert gate_scale.dtype == torch.float32 and up_scale.dtype == torch.float32
+        dgate.copy_(grad_c)
+        dup.copy_(grad_c * 0.5)
+
+    monkeypatch.setattr(swiglu_mod, "int8_swiglu_fwd_kernel", _GridCallable(fake_fwd))
+    monkeypatch.setattr(swiglu_mod, "int8_swiglu_bwd_kernel", _GridCallable(fake_bwd))
+
+    gate = torch.randn(2, 16, 128, dtype=torch.float16, requires_grad=True)
+    up = torch.randn(2, 16, 128, dtype=torch.float16, requires_grad=True)
+    out = swiglu_mod.swiglu(gate, up)
+    out.sum().backward()
+    assert gate.grad is not None and gate.grad.shape == gate.shape
+    assert up.grad is not None and up.grad.shape == up.shape
+
+    with torch.no_grad():
+        out_ng = swiglu_mod.swiglu(gate, up)
+        assert not out_ng.requires_grad
+
+
 # ---------------------------------------------------------------------------
 # 2. CUDA Triton Kernel Correctness Tests (Roles 1, 2, 3)
 # ---------------------------------------------------------------------------
