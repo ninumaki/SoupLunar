@@ -97,7 +97,7 @@ def build_slide_1(prs):
     p1.space_before = Pt(8)
 
     p2 = tf.add_paragraph()
-    p2.text = "Kaggle Tesla T4 (15GB): VRAM 2.27x үнемдеу (14.35 GB -> 6.32 GB), 1.305x Speedup және 10/10 PASS"
+    p2.text = "Kaggle Tesla T4 (15GB): VRAM 3.39x үнемдеу (14.35 GB -> 4.23 GB), 1.219x Speedup және 10/10 PASS"
     p2.font.name = "Arial"
     p2.font.size = Pt(14)
     p2.font.color.rgb = ACCENT_EMER
@@ -140,7 +140,7 @@ def build_slide_1(prs):
 def build_slide_2(prs):
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     set_bg(slide)
-    add_header(slide, "1-Сұрақ: Қай операцияларды жеделдеттік және неге?", "ТАЛДАУ ЖӘНЕ УЗКИЕ МЕСТА (PROFILING)")
+    add_header(slide, "1-Сұрақ: Қай операцияларды жеделдеттік және неге?", "ПРОФАЙЛИНГ ЖӘНЕ КЕДЕРГІЛЕР (BOTTLENECKS)")
 
     # Left Card: Profiling & Bottlenecks
     add_card(slide, 0.8, 1.6, 5.7, 5.2)
@@ -218,16 +218,17 @@ def build_slide_3(prs):
          "• Online Softmax (LogSumExp) алгоритмі арқылы C=128 өлшемді чанктермен есептеледі.\n"
          "• [2048 x 151936] FP16 логиттер (1.24 GB) HBM-де сақталмайды -> 77.8 MB буфер (93.7% үнемдеу!).\n"
          "• Streaming Shannon Entropy H(p) = LSE(z) - mean(z) және dlogits бір өтуде анықталады."),
-        ("Fused RMSNorm (Forward + Backward)", "solution/fused_rmsnorm.py",
-         "• PyTorch-тың 5 бөлек CUDA ядросының орнына 1 SRAM транзиті. BLOCK_SIZE=2048 >= 1536.\n"
-         "• Дисперсия мен rrms FP32 регистрлерінде жүреді; салмақпен көбейту тікелей чипте.\n"
-         "• Backward кезінде dweight FP32-де жинақталып, градиент регрессиясы 0.00% деңгейінде сақталады."),
-        ("Fast 4-bit NF4 Dequantization", "solution/nf4_dequant.py",
-         "• 16-мәндік Bitsandbytes NF4 кестесі Triton регистріне бекітілген (Register LUT).\n"
-         "• 4-биттік тығыз деректерді absmax блоктарымен бірге SRAM ішінде FP16-ға ашады (1.7x speedup)."),
-        ("Fused In-Place RoPE & Dynamic Padding", "solution/fused_rope.py & dynamic_padding.py",
-         "• Q (12 heads) және K (2 heads) тензорларын жаңа жад бөлмей, страйдтық индекспен айналдыру.\n"
-         "• Dynamic Pad Removal: Батчты нақты максималды өлшемге дейін қысқартып, O(S^2) attention көлемін 35%-ға азайтады.")
+        ("Fused RMSNorm + Fused Q/K RoPE", "solution/fused_rmsnorm.py & fused_rope.py",
+         "• RMSNorm: PyTorch-тың 5 бөлек CUDA ядросының орнына 1 SRAM өтуі; дисперсия FP32 регистрлерінде.\n"
+         "• QLoRA-да норма салмақтары қатып тұрғандықтан (requires_grad=False) dW редукциясы өткізіледі.\n"
+         "• RoPE: Q (12 head) және K (2 head) бір кернелде, rotate_half/cat аралық тензорларынсыз бұрылады."),
+        ("Byte-Packed NF4 Dequantization", "solution/nf4_dequant.py",
+         "• 16-мәндік NF4 кестесі Triton регистрінде (Register LUT), double-quant absmax қолдауымен.\n"
+         "• 4-биттік салмақтарды SRAM ішінде FP16-ға ашып, bitsandbytes dequantize_4bit орнын басады."),
+        ("INT8 SwiGLU + Dynamic Padding + K-Bit MP", "solution/swiglu.py, dynamic_padding.py, apply()",
+         "• INT8 SwiGLU: forward дәл FP16; backward үшін (gate, up) group-128 INT8 түрінде сақталады.\n"
+         "• Dynamic Padding: батч ішіндегі артық pad-токендер кесіледі, батч реті өзгермейді.\n"
+         "• K-Bit Mixed Precision: тек нормалар FP32-де, embed/lm_head FP16-да қалады.")
     ]
 
     coords = [(0.8, 1.6), (6.8, 1.6), (0.8, 4.3), (6.8, 4.3)]
@@ -266,14 +267,15 @@ def build_slide_4(prs):
     # Benchmark Table
     rows = [
         ["Метрика / Көрсеткіш", "Базалық Soup 0.77.0", "LunarTeam Шешімі", "Өзгеріс / Ratio", "Қорытынды"],
-        ["Пиктік бейнежад (Peak VRAM)", "14,345 МиБ (14.35 GB)", "6,323 МиБ (6.32 GB)", "Memory 2.269x", "🔥 8,022 МиБ (>8 GB) үнемделді!"],
-        ["Толық оқыту уақыты (soup train)", "84.11 с", "64.46 с", "Speedup 1.305x", "⚡ 20 секундқа жеделдеді!"],
-        ["Өз Triton кернелдерінің үлесі", "0.0%", "10.1%", "Talap: >= 5.0%", "✅ Check 4 PASS (2 есе асты)"],
-        ["1-қадамдағы Loss ауытқуы (ΔL1)", "2.05893", "2.05953", "Delta = 0.029%", "✅ Check 6 PASS (<= 1.0% шегі)"],
-        ["64 қадамдық орташа Loss айырмасы", "0.00%", "0.058%", "Delta = 0.058%", "✅ Check 6 PASS (<= 3.0% шегі)"],
-        ["Streaming Shannon Entropy айырмасы", "0.00%", "0.216%", "Delta = 0.216%", "✅ Check 5 PASS (<= 3.0% шегі)"],
-        ["Eval Loss (Жасырын қатарлар)", "2.04967", "2.04956", "Delta = -0.005%", "💎 Check 7 PASS (Сапа жақсарды)"],
-        ["Soup регрессиялық тесттері", "79 passed", "79 passed in 0.50s", "100% сәйкес", "✅ Check 10 PASS (79/79)"],
+        ["Пиктік бейнежад (Peak VRAM)", "14,345 МиБ (14.35 GB)", "4,231 МиБ (4.23 GB)", "Memory 3.390x", "🔥 10,114 МиБ (10.1 GB) үнемделді!"],
+        ["Толық оқыту уақыты (soup train)", "79.38 с", "65.10 с", "Speedup 1.219x", "⚡ 14.3 секундқа жеделдеді!"],
+        ["Өз Triton кернелдерінің үлесі", "0.0%", "13.3%", "Талап: >= 5.0%", "✅ Check 4 PASS (2.6 есе асты)"],
+        ["1-қадамдағы Loss ауытқуы (ΔL1)", "2.05893", "2.05870", "Delta = 0.011%", "✅ Check 6 PASS (<= 1.0% шегі)"],
+        ["64 қадамдық орташа Loss айырмасы", "0.00%", "0.060%", "Delta = 0.060%", "✅ Check 6 PASS (<= 3.0% шегі)"],
+        ["Streaming Shannon Entropy айырмасы", "0.00%", "0.222%", "Delta = 0.222%", "✅ Check 5 PASS (<= 3.0% шегі)"],
+        ["Eval Loss (Жасырын қатарлар)", "2.04970", "2.04956", "Delta = -0.007%", "💎 Check 7 PASS (Сапа жақсарды)"],
+        ["Triton кернелдерінің unit-тесттері", "—", "21 passed in 18.02s", "100% жасыл", "✅ PyTorch эталонымен сәйкес"],
+        ["Soup регрессиялық тесттері", "79 passed", "79 passed in 0.38s", "100% сәйкес", "✅ Check 10 PASS (79/79)"],
         ["Барлық ережелер (check_rules.py)", "—", "10 / 10 PASS", "ALL PASS: TRUE", "🏆 20/20 ұпай кепілдендірілді"]
     ]
 
@@ -303,7 +305,7 @@ def build_slide_4(prs):
                 p.font.bold = (r_idx == 0 or c_idx in (2, 3))
                 if r_idx == 0:
                     p.font.color.rgb = TEXT_WHITE
-                elif c_idx == 3 and "2.269x" in cell_text:
+                elif c_idx == 3 and "3.390x" in cell_text:
                     p.font.color.rgb = ACCENT_EMER
                 elif c_idx == 4 and "PASS" in cell_text:
                     p.font.color.rgb = ACCENT_EMER
@@ -314,7 +316,7 @@ def build_slide_4(prs):
     note_box = slide.shapes.add_textbox(Inches(0.8), Inches(6.25), Inches(11.733), Inches(0.8))
     tf_n = note_box.text_frame
     pn = tf_n.paragraphs[0]
-    pn.text = "💡 Практикалық маңызы: Үнемделген 8.0 ГБ VRAM арқасында тегін Kaggle T4 картасында контент ұзындығын 512-ден 2048-ге өсіруге немесе батчты 4 есе арттыруға толық мүмкіндік бар!"
+    pn.text = "💡 Практикалық маңызы: Үнемделген 10.1 ГБ VRAM арқасында тегін Kaggle T4 картасында контент ұзындығын 512-ден 2048-ге өсіруге немесе батчты 4 есе арттыруға толық мүмкіндік бар!"
     pn.font.size = Pt(11)
     pn.font.bold = True
     pn.font.color.rgb = ACCENT_CYAN
@@ -398,19 +400,19 @@ def build_slide_6(prs):
     # 3 Summary Cards
     cards = [
         ("🏆 10 / 10 PASS", "Толық Ережелік Сәйкестік",
-         "• PyTest: 79/79 passed (0.50s)\n"
-         "• Kernel share: 10.1% (>= 5%)\n"
-         "• Eval loss: -0.005% (сақталды)\n"
+         "• PyTest: 21/21 + Soup 79/79 passed\n"
+         "• Kernel share: 13.3% (>= 5%)\n"
+         "• Eval loss: -0.007% (сақталды)\n"
          "• 0 NaN/Inf барлық 64 қадамда"),
-        ("⚡ 1.305x Speedup", "Оқытуды Жеделдету",
-         "• База: 84.11 с -> Бізде: 64.46 с\n"
-         "• 20 секунд таза уақыт үнемделді\n"
+        ("⚡ 1.219x Speedup", "Оқытуды Жеделдету",
+         "• База: 79.38 с -> Бізде: 65.10 с\n"
+         "• 14.3 секунд таза уақыт үнемделді\n"
          "• Fused CE: 1.24 GB -> 78 MB\n"
          "• Dynamic unpadding: -35% FLOPs"),
-        ("🔥 2.269x VRAM Ratio", "Жад Бойынша Чемпион",
+        ("🔥 3.390x VRAM Ratio", "Жад Бойынша Чемпион",
          "• База: 14,345 MiB (14.35 GB)\n"
-         "• LunarTeam: 6,323 MiB (6.32 GB)\n"
-         "• Үнемделген: 8,022 MiB (>8 GB!)\n"
+         "• LunarTeam: 4,231 MiB (4.23 GB)\n"
+         "• Үнемделген: 10,114 MiB (10.1 GB!)\n"
          "• OOM қаупі толық жойылды")
     ]
 
@@ -446,7 +448,7 @@ def build_slide_6(prs):
     tfl.word_wrap = True
     pl = tfl.paragraphs[0]
     pl.text = (
-        "🔗 GitHub Репозиторий: https://github.com/ninumaki/SoupLunar (Ветка: main, Commit: 63544ba)\n"
+        "🔗 GitHub Репозиторий: https://github.com/ninumaki/SoupLunar (Ветка: main, финалдық коммит)\n"
         "🔗 Жария Kaggle Ноутбугы: https://www.kaggle.com/code/ruekdp/notebookd4dc02b276 (Run All -> 10/10 PASS)"
     )
     pl.font.size = Pt(10.5)
