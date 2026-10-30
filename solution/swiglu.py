@@ -162,7 +162,7 @@ class Int8CompressedSwiGLU(torch.autograd.Function):
         n_groups = triton.cdiv(n_elements, GROUP_SIZE)
         out = torch.empty_like(gate_c)
 
-        need_grad = torch.is_grad_enabled() and (gate.requires_grad or up.requires_grad)
+        need_grad = bool(ctx.needs_input_grad[0] or ctx.needs_input_grad[1])
         if need_grad:
             gate_q = torch.empty(n_elements, dtype=torch.int8, device=gate_c.device)
             up_q = torch.empty(n_elements, dtype=torch.int8, device=gate_c.device)
@@ -222,7 +222,10 @@ class Int8CompressedSwiGLU(torch.autograd.Function):
             GROUP_SIZE=GROUP_SIZE,
             num_warps=4,
         )
-        return dgate, dup
+        return (
+            dgate if ctx.needs_input_grad[0] else None,
+            dup if ctx.needs_input_grad[1] else None,
+        )
 
 
 def swiglu(gate: torch.Tensor, up: torch.Tensor) -> torch.Tensor:
