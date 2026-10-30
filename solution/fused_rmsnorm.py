@@ -108,7 +108,10 @@ class FusedRMSNormFunction(torch.autograd.Function):
 
         block_size = triton.next_power_of_2(n_cols)
         num_warps = 8 if block_size >= 2048 else 4
-        out_dtype = torch.promote_types(x.dtype, weight.dtype)
+        if x.is_cuda and torch.is_autocast_enabled("cuda"):
+            out_dtype = torch.get_autocast_dtype("cuda")
+        else:
+            out_dtype = torch.promote_types(x.dtype, weight.dtype)
         y = torch.empty((n_rows, n_cols), dtype=out_dtype, device=x.device)
         rstd = torch.empty(n_rows, dtype=torch.float32, device=x.device)
 

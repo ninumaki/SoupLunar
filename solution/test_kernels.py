@@ -257,19 +257,22 @@ def test_fused_cross_entropy_matches_pytorch(dtype):
     )
 
     tol = 3e-3 if dtype == torch.float16 else 1e-4
+    assert torch.isfinite(entropy).all(), "entropy contains non-finite values (NaN/Inf)"
     torch.testing.assert_close(total_loss, ref_loss, rtol=tol, atol=tol)
     torch.testing.assert_close(entropy.float(), ref_entropy.float(), rtol=tol, atol=tol)
     torch.testing.assert_close(correct.long(), ref_correct.long())
     torch.testing.assert_close(piece_grad.float(), ref_piece_grad.float(), rtol=tol, atol=tol)
 
-    # Also test multi-chunk autograd wrapper (`chunk=64` across `c=160`)
+    # Also test multi-chunk autograd wrapper (`chunk=64` across `c=160`) under AMP GradScaler scale=65536.0
     piece2 = piece.detach().clone().requires_grad_(True)
     chunk_loss, step = fused_chunked_causal_lm_loss(
         piece2, head, target, chunk=64, shift_labels=target
     )
-    chunk_loss.backward()
+    assert torch.isfinite(step.token_entropy).all()
+    (chunk_loss * 65536.0).backward()
+    assert torch.isfinite(piece2.grad).all(), "scaled backward overflowed under GradScaler=65536"
     torch.testing.assert_close(chunk_loss.float(), ref_mean_loss.float(), rtol=tol, atol=tol)
-    torch.testing.assert_close(piece2.grad.float(), ref_piece_grad.float(), rtol=tol, atol=tol)
+    torch.testing.assert_close((piece2.grad.float() / 65536.0), ref_piece_grad.float(), rtol=tol, atol=tol)
     torch.testing.assert_close(step.correct.long(), ref_correct.long())
 
 
