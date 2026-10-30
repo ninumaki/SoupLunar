@@ -97,5 +97,5 @@
 * **Толық сәйкестік:** Барлық 10 тексеріс өтті (ALL CHECKS PASSED: True).
 * **Жад чемпионы:** 3.39 есе жад үнемдеу ($m = 3.390x$).
 * **Ресурс сілтемелері:**
-  * Ашық Kaggle Notebook: [Kaggle Run](https://www.kaggle.com/code/togzhan/soup-kernel-challenge-t4)
+  * Ашық Kaggle Notebook: [Kaggle Run](https://www.kaggle.com/code/bolebaybekbolat/notebookc88b010a21)
   * Ресми GitHub репозиторий: [ninumaki/SoupLunar](https://github.com/ninumaki/SoupLunar)

@@ -8,7 +8,7 @@
 ---
 
 ## 📌 Түйінді Сілтемелер (Quick Links)
-* 🔗 **Ашық Kaggle Ноутбугы (Public Notebook):** [Kaggle Notebook Run](https://www.kaggle.com/code/ruekdp/notebookd4dc02b276) *(Соңғы `COMMIT` хэшімен сақталған ресми нұсқа)*
+* 🔗 **Ашық Kaggle Ноутбугы (Public Notebook):** [Kaggle Notebook Run](https://www.kaggle.com/code/bolebaybekbolat/notebookc88b010a21) *(Соңғы `COMMIT` хэшімен сақталған ресми нұсқа)*
 * 🔗 **GitHub Репозиторий және Соңғы Коммит:** [ninumaki/SoupLunar](https://github.com/ninumaki/SoupLunar) ([Соңғы коммит](https://github.com/ninumaki/SoupLunar/commit/HEAD))
 * 📊 **Презентация (Слайдтар):** [PRESENTATION.md](./PRESENTATION.md) және `presentation.pptx`
 * 🔬 **Автоматтандырылған ML Research & QA Верификация Скрипті:** [`verify_research_qa.py`](./verify_research_qa.py)

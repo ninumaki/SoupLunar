@@ -5,7 +5,7 @@ Copy of `templates/SUBMISSION.md` filled in for our Decentrathon 6.0 submission 
 ## Links
 - Repository, final commit: https://github.com/ninumaki/SoupLunar/commit/HEAD
 - Public Kaggle notebook, the saved version (`COMMIT` in it = the sha above; the same link is in our README):
-  https://www.kaggle.com/code/ruekdp/notebookd4dc02b276
+  https://www.kaggle.com/code/bolebaybekbolat/notebookc88b010a21
 - Presentation: [PRESENTATION.md](./PRESENTATION.md) (`presentation.pptx`)
 - Automated ML Research & QA Verification Script: [verify_research_qa.py](./verify_research_qa.py)
 
