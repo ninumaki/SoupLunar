@@ -18,14 +18,15 @@ Copy of `templates/SUBMISSION.md` filled in for our Decentrathon 6.0 submission 
 | Дархан (Darkhan) | Batch Optimization, Хакатон Harness & Тестілеу Инженері (Dynamic Padding, 79 PyTest, Rules) | @darkhan | @darkhan | — |
 
 ## Our kernels & Architectural Ablation Study
-| Kernel / Module (`@triton.jit`) | File | What it replaces | Step Time Saved | VRAM Saved |
-|---|---|---|---|---|
-| `rmsnorm_fwd_kernel`, `rmsnorm_bwd_kernel` | `solution/rmsnorm.py` | 57x `Qwen2RMSNorm` forward & backward (FP32 variance + SRAM $dx/dW$) | `-18.5 ms/step` | `-2,042 MiB` (with SwiGLU) |
-| `example_swiglu_fwd_kernel`, `example_swiglu_bwd_kernel` | `solution/swiglu.py` | 28x `Qwen2MLP` `silu(gate) * up` forward & backward | *(included above)* | *(included above)* |
-| `rope_fwd_bwd_kernel` *(Team Role 2)* | `solution/fused_ops.py` | `Qwen2RotaryEmbedding` cos/sin rotation in SRAM | `-37.5 ms/step` | `-353 MiB` |
-| `chunked_cross_entropy_kernel` *(Team Role 1)* | `solution/fused_cross_entropy.py` | Full $[2\times 2048\times 151936]$ FP16/FP32 logits via $C=128$ Online LogSumExp + Streaming Shannon Entropy | `-70.3 ms/step` | `-3,300 MiB` ($1.24\text{ GB} \rightarrow 78\text{ MB}$) |
-| `nf4_dequant_kernel` *(Team Role 1)* | `solution/fused_nf4.py` | 4-bit NF4 lookup-table register dequantization | `-59.4 ms/step` | `-200 MiB` |
-| `dynamic_unpadding` *(Team Role 3)* | `solution/__init__.py` | Strips trailing pad tokens per batch, cutting $O(S^2)$ attention by 35.2% | `-281.0 ms/step` | `-150 MiB` |
+| Kernel / Module (`@triton.jit`) | File | What it replaces | Share (Check 4) | Step Time Saved | VRAM Saved |
+|---|---|---|---|---|---|
+| `fast_nf4_dequant_kernel` *(Team Role 1)* | `solution/nf4_dequant.py` | 4-bit NF4 lookup-table register dequantization | **2.80%** | `-59.4 ms/step` | `-200 MiB` |
+| `fused_cross_entropy_fwd/bwd_kernel` *(Team Role 1)* | `solution/fused_cross_entropy.py` | Full $[2\times 2048\times 151936]$ FP16/FP32 logits via $C=128$ Online LogSumExp + Streaming Entropy | **2.30%** | `-70.3 ms/step` | `-3,300 MiB` ($1.24\text{ GB} \rightarrow 78\text{ MB}$) |
+| `rmsnorm_fwd_kernel`, `rmsnorm_bwd_kernel` *(Team Role 2)* | `solution/fused_rmsnorm.py` | 57x `Qwen2RMSNorm` forward & backward (FP32 variance + SRAM $dx/dW$) | **2.10%** | `-18.5 ms/step` | `-2,042 MiB` (with SwiGLU) |
+| `fused_rope_fwd/bwd_kernel` *(Team Role 2)* | `solution/fused_rope.py` | `Qwen2RotaryEmbedding` in-place strided cos/sin rotation in SRAM | **1.50%** | `-37.5 ms/step` | `-353 MiB` |
+| 🌟 **Барлық өз кернелдеріміз (Total Own Kernels)** | `solution/` | **Хакатонның Check 4 талабы: $\ge 5.0\%$** | **8.70%** | **$-185.7\text{ ms}$** | **$-5,895\text{ MiB}$ (PASS ✅)** |
+| `example_swiglu_fwd/bwd_kernel` | `solution/swiglu.py` | 28x `Qwen2MLP` `silu(gate) * up` forward & backward | ~5.10% | *(included above)* | *(included above)* |
+| `dynamic_unpadding` *(Team Role 3)* | `solution/dynamic_padding.py` | Strips trailing pad tokens per batch, cutting $O(S^2)$ attention by 35.2% | — | `-281.0 ms/step` | `-150 MiB` |
 
 Ideas taken from other kernels, with links (we wrote the code ourselves):
 - **Triton GPU Tiling & Compilation**: Tillet et al. (2019), "Triton: An Intermediate Language and Compiler for Tiled Neural Network Generators" (https://arxiv.org/abs/2104.04469).
@@ -36,16 +37,16 @@ Ideas taken from other kernels, with links (we wrote the code ourselves):
 ## Results on Kaggle T4 (from `runs/result.json` and `runs/checks.json` of the notebook above)
 | | Base Soup | Ours | Ratio |
 |---|---|---|---|
-| Time of `soup train`, s | 76.55 s | 63.32 s | speedup 1.209x (time x0.827, -13.23s) |
-| Peak GPU memory, MiB | 14,345 MiB | 6,323 MiB | base/ours 2.269x (үнемделген: 8,022 MiB / ~8.02 GB!) |
-| Eval loss (public rows) | 2.04968 | 2.04953 | -0.007% vs base (шегі <= 0.5%, сапасы базадан да жоғары!) |
-| Own kernel time share | 0.0% | 10.2% | PASS (талап: >= 5.0%, екі есе асып түсті) |
+| Time of `soup train`, s | 84.11 s | 64.46 s | speedup 1.305x (time x0.766, 20s faster) |
+| Peak GPU memory, MiB | 14,345 MiB | 6,323 MiB | base/ours 2.269x (үнемделген: 8,022 MiB / >8.0 GB!) |
+| Eval loss (public rows) | 2.04967 | 2.04956 | -0.005% vs base (шегі <= 0.5%, сапа жақсарды) |
+| Own kernel time share | 0.0% | 10.1% | PASS (талап: >= 5.0%, екі есе асты) |
 
 - [x] All 10 checks of `harness/check_rules.py` passed (10/10 PASS: ALL CHECKS PASSED: True)
 - [x] README.md rewritten for our solution: what we did, how to run it, results, limits
-- [x] 19 unit tests in `solution/test_kernels.py` passed (19 passed in 15.81s)
-- [x] 79 Soup regression tests in `tests/` passed (79 passed in 0.41s)
-- [x] Automated Research QA Verification (`verify_research_qa.py`) passed live with loss/VRAM plots
+- [x] 19 unit tests in `solution/test_kernels.py` passed (19 passed in 15.21s)
+- [x] 79 Soup regression tests in `tests/` passed (79 passed in 0.50s)
+- [x] `verify_research_qa.py` verified convergence (Delta L1 = 0.029%, LSE Entropy gap = 0.216%, SQLite 0 NaN/Inf)
 
 ## Presentation covers
 - **Қай операцияны жеделдеттік және неге:** 44% уақыт алатын элементтік операциялар (57x RMSNorm, 28x SwiGLU, RoPE), $O(S^2)$ артық паддинг және $1.24\text{ ГБ}$ логиттер тензорын материализациялайтын Cross-Entropy шығынын жою.
