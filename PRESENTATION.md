@@ -22,8 +22,8 @@
 * **Спикер:** Тоғжан (4-рөл: Техникалық Құжаттама, Kaggle және Питч)
 * **Команда:** LunarTeam | Decentrathon 6.0
 * **Команда құрамы:**
-  * **Тоғжан (Role 4):** Техникалық Құжаттама, Аналитика, Kaggle Релиз және Питч (Team Lead)
-  * **Бекболат (Role 1):** Техникалық Лид & GPU Kernel Архитекторы (Fused Cross-Entropy, NF4 Dequantization)
+  * **Бекболат (Role 1):** Техникалық Лид, Капитан & GPU Kernel Архитекторы (Fused Cross-Entropy, NF4 Dequantization)
+  * **Тоғжан (Role 4):** ML Research Engineer & Quality Assurance Lead (Convergence Math, VRAM Roofline, Whitepaper & Pitch)
   * **Нұрдәулет (Role 2):** Triton Element-Wise Kernels & Monkey-Patching Инженері (RMSNorm, SwiGLU, `apply()`)
   * **Дархан (Role 3):** Batch Optimization, Хакатон Harness & Тестілеу Инженері (Dynamic Unpadding, PyTest 79 тесті)
 
