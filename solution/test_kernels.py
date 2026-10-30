@@ -189,6 +189,36 @@ def test_dynamic_padding_with_rewind_trainer_records_exact_row_losses(tmp_path):
     assert all(t > 0 for t in records[0]["row_tokens"])
 
 
+def test_kbit_mixed_precision_keeps_embeddings_and_biases_fp16_and_norms_fp32():
+    """Verify 4-bit preparation keeps frozen embed_tokens/lm_head/biases in fp16 and norms in fp32."""
+    import peft
+    from transformers.models.qwen2 import Qwen2Config, Qwen2ForCausalLM
+
+    from solution.kbit_mp import patch_kbit_mixed_precision
+
+    patch_kbit_mixed_precision()
+    cfg = Qwen2Config(
+        vocab_size=256,
+        hidden_size=64,
+        intermediate_size=128,
+        num_hidden_layers=2,
+        num_attention_heads=4,
+        num_key_value_heads=2,
+        max_position_embeddings=64,
+    )
+    model = Qwen2ForCausalLM(cfg).to(dtype=torch.float16)
+    model.is_loaded_in_4bit = True  # simulate 4-bit loaded flag
+
+    prepared = peft.prepare_model_for_kbit_training(model, use_gradient_checkpointing=False)
+    assert all(not p.requires_grad for p in prepared.parameters())
+    assert prepared.model.embed_tokens.weight.dtype == torch.float16
+    assert prepared.lm_head.weight.dtype == torch.float16
+    assert prepared.model.layers[0].self_attn.q_proj.bias.dtype == torch.float16
+    assert prepared.model.layers[0].input_layernorm.weight.dtype == torch.float32
+    assert prepared.model.layers[0].post_attention_layernorm.weight.dtype == torch.float32
+    assert prepared.model.norm.weight.dtype == torch.float32
+
+
 # ---------------------------------------------------------------------------
 # 2. CUDA Triton Kernel Correctness Tests (Roles 1, 2, 3)
 # ---------------------------------------------------------------------------
@@ -212,10 +242,20 @@ def test_swiglu_matches_pytorch(dtype, shape):
 
     out = swiglu(gate, up)
     out.backward(grad)
-    tol = TOLERANCE[dtype]
-    torch.testing.assert_close(out.float(), ref, rtol=tol, atol=tol)
-    torch.testing.assert_close(gate.grad.float(), ref_dgate, rtol=tol, atol=tol)
-    torch.testing.assert_close(up.grad.float(), ref_dup, rtol=tol, atol=tol)
+    fwd_tol = TOLERANCE[dtype]
+    torch.testing.assert_close(out.float(), ref, rtol=fwd_tol, atol=fwd_tol)
+
+    # Backward uses group-128 symmetric INT8 compressed activations (~48.4% VRAM saved)
+    cos_dgate = torch.nn.functional.cosine_similarity(gate.grad.float().flatten(), ref_dgate.flatten(), dim=0)
+    cos_dup = torch.nn.functional.cosine_similarity(up.grad.float().flatten(), ref_dup.flatten(), dim=0)
+    assert float(cos_dgate) > 0.9998
+    assert float(cos_dup) > 0.9998
+    torch.testing.assert_close(gate.grad.float(), ref_dgate, rtol=2.5e-2, atol=5e-2)
+    torch.testing.assert_close(up.grad.float(), ref_dup, rtol=2.5e-2, atol=5e-2)
+
+    with torch.no_grad():
+        out_ng = swiglu(gate, up)
+        torch.testing.assert_close(out_ng.float(), ref, rtol=fwd_tol, atol=fwd_tol)
 
 
 @cuda_only
@@ -337,6 +377,8 @@ def test_fused_rope_matches_pytorch(dtype):
     q_raw.grad = k_raw.grad = None
 
     out_q, out_k = fused_rope(q_raw.transpose(1, 2), k_raw.transpose(1, 2), cos, sin)
+    assert out_q.transpose(1, 2).is_contiguous()
+    assert out_k.transpose(1, 2).is_contiguous()
     loss_tri = (out_q.float() * dq_out.float()).sum() + (out_k.float() * dk_out.float()).sum()
     loss_tri.backward()
 

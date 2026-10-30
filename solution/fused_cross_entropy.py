@@ -42,7 +42,7 @@ except ImportError:
     tl = _TritonStub()  # type: ignore[assignment]
 
 BLOCK_SIZE = 2048
-CHUNK_SIZE = 128
+CHUNK_SIZE = 64
 IGNORE_INDEX = -100
 _PATCHED = False
 
@@ -215,14 +215,22 @@ def fused_chunk_terms(
     with_grad: bool = True,
     *,
     compute_weight: Optional[torch.Tensor] = None,
+    compute_weight_t: Optional[torch.Tensor] = None,
     compute_bias: Optional[torch.Tensor] = None,
     denom_tensor: Optional[torch.Tensor] = None,
+    logits_buf: Optional[torch.Tensor] = None,
+    loss_out: Optional[torch.Tensor] = None,
+    entropy_out: Optional[torch.Tensor] = None,
+    lse_buf: Optional[torch.Tensor] = None,
+    correct_buf: Optional[torch.Tensor] = None,
 ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Optional[torch.Tensor]]:
     """Compute loss, entropy, token_loss, correct_hits, and piece_grad for one token chunk."""
     b, c, h = piece.shape
     n_rows = b * c
     flat_piece = piece.reshape(n_rows, h)
-    flat_target = target.reshape(n_rows).contiguous()
+    flat_target = target.reshape(n_rows)
+    if not flat_target.is_contiguous():
+        flat_target = flat_target.contiguous()
 
     use_direct_linear = compute_weight is not None
     if use_direct_linear:
@@ -230,10 +238,15 @@ def fused_chunk_terms(
             flat_piece_c = (
                 flat_piece if flat_piece.dtype == compute_weight.dtype else flat_piece.to(compute_weight.dtype)
             )
-            logits = torch.nn.functional.linear(flat_piece_c, compute_weight, compute_bias)
+            if logits_buf is not None and compute_weight_t is not None:
+                logits = logits_buf[:n_rows]
+                torch.matmul(flat_piece_c, compute_weight_t, out=logits)
+                if compute_bias is not None:
+                    logits.add_(compute_bias)
+            else:
+                logits = torch.nn.functional.linear(flat_piece_c, compute_weight, compute_bias)
     else:
         weight = getattr(head, "weight", None)
-        bias = getattr(head, "bias", None)
         if type(head) is torch.nn.Linear and weight is not None:
             with torch.no_grad():
                 logits = head(flat_piece.detach())
@@ -244,10 +257,16 @@ def fused_chunk_terms(
         logits = logits.contiguous()
     vocab_size = logits.shape[-1]
 
-    loss = torch.empty(n_rows, dtype=torch.float32, device=logits.device)
-    lse = torch.empty(n_rows, dtype=torch.float32, device=logits.device)
-    entropy = torch.empty(n_rows, dtype=torch.float32, device=logits.device)
-    correct = torch.empty(n_rows, dtype=torch.int32, device=logits.device)
+    loss = loss_out if loss_out is not None else torch.empty(n_rows, dtype=torch.float32, device=logits.device)
+    lse = lse_buf[:n_rows] if lse_buf is not None else torch.empty(n_rows, dtype=torch.float32, device=logits.device)
+    entropy = (
+        entropy_out if entropy_out is not None else torch.empty(n_rows, dtype=torch.float32, device=logits.device)
+    )
+    correct = (
+        correct_buf[:n_rows]
+        if correct_buf is not None
+        else torch.empty(n_rows, dtype=torch.int32, device=logits.device)
+    )
 
     grid = (n_rows,)
     fused_cross_entropy_fwd_kernel[grid](
@@ -298,13 +317,15 @@ def fused_chunk_terms(
         if can_inplace and weight is not None:
             with torch.amp.autocast("cuda", enabled=False):
                 w_mm = weight if weight.dtype == dlogits.dtype else weight.to(dlogits.dtype)
-                piece_grad = torch.matmul(dlogits, w_mm).to(piece.dtype).view(b, c, h)
+                mm_out = torch.matmul(dlogits, w_mm)
+                piece_grad = (mm_out if mm_out.dtype == piece.dtype else mm_out.to(piece.dtype)).view(b, c, h)
         else:
             (piece_grad,) = torch.autograd.grad(logits, flat_piece, grad_outputs=dlogits)
             piece_grad = piece_grad.to(piece.dtype).view(b, c, h)
             del dlogits
 
-    del logits
+    if logits_buf is None:
+        del logits
 
     entropy_tensor = entropy.view(b, c)
     token_loss_tensor = loss.view(b, c)
@@ -321,14 +342,14 @@ class _TritonChunkedHeadLoss(torch.autograd.Function):
         b, s, h = hidden.shape
         grad = torch.zeros_like(hidden) if with_grad else None
         total = torch.zeros((), dtype=torch.float32, device=hidden.device)
-        entropies = []
-        losses = []
         correct = torch.zeros((), dtype=torch.long, device=hidden.device)
         denom_tensor = _as_denom_tensor(denominator, hidden.device)
 
-        # Convert frozen lm_head.weight once per step instead of re-casting 933 MB per chunk
+        # Convert/detach frozen lm_head.weight once per step and preallocate reusable chunk buffers
         compute_weight = None
+        compute_weight_t = None
         compute_bias = None
+        logits_buf = None
         if type(head) is torch.nn.Linear and getattr(head, "weight", None) is not None:
             weight = head.weight
             bias = head.bias
@@ -339,15 +360,45 @@ class _TritonChunkedHeadLoss(torch.autograd.Function):
                     else torch.promote_types(hidden.dtype, weight.dtype)
                 )
                 compute_weight = weight.detach() if weight.dtype == compute_dtype else weight.detach().to(compute_dtype)
+                compute_weight_t = compute_weight.t()
                 if bias is not None:
                     compute_bias = bias.detach() if bias.dtype == compute_dtype else bias.detach().to(compute_dtype)
+                max_chunk_rows = b * min(chunk, s)
+                logits_buf = torch.empty(
+                    (max_chunk_rows, compute_weight.shape[0]),
+                    dtype=compute_dtype,
+                    device=hidden.device,
+                )
+
+        max_rows = b * min(chunk, s)
+        lse_buf = torch.empty(max_rows, dtype=torch.float32, device=hidden.device)
+        correct_buf = torch.empty(max_rows, dtype=torch.int32, device=hidden.device)
+        use_prealloc_2d = (b == 1)  # when b == 1, [:, start:stop] is contiguous 1D!
+        if use_prealloc_2d:
+            token_entropy = torch.empty((b, s), dtype=torch.float32, device=hidden.device)
+            token_loss = torch.empty((b, s), dtype=torch.float32, device=hidden.device)
+            entropies = None
+            losses = None
+        else:
+            token_entropy = torch.empty((b, s), dtype=torch.float32, device=hidden.device)
+            token_loss = torch.empty((b, s), dtype=torch.float32, device=hidden.device)
+            loss_chunk_buf = torch.empty(max_rows, dtype=torch.float32, device=hidden.device)
+            entropy_chunk_buf = torch.empty(max_rows, dtype=torch.float32, device=hidden.device)
 
         for start in range(0, s, chunk):
             stop = min(start + chunk, s)
             piece = hidden[:, start:stop]
             labels = target[:, start:stop]
+            c_rows = b * (stop - start)
 
-            part, entropy, token_loss, hits, piece_grad = fused_chunk_terms(
+            if use_prealloc_2d:
+                loss_slice = token_loss[:, start:stop].view(-1)
+                ent_slice = token_entropy[:, start:stop].view(-1)
+            else:
+                loss_slice = loss_chunk_buf[:c_rows]
+                ent_slice = entropy_chunk_buf[:c_rows]
+
+            part, entropy, t_loss, hits, piece_grad = fused_chunk_terms(
                 head,
                 piece,
                 labels,
@@ -355,22 +406,27 @@ class _TritonChunkedHeadLoss(torch.autograd.Function):
                 denominator=denominator,
                 with_grad=with_grad,
                 compute_weight=compute_weight,
+                compute_weight_t=compute_weight_t,
                 compute_bias=compute_bias,
                 denom_tensor=denom_tensor,
+                logits_buf=logits_buf,
+                loss_out=loss_slice,
+                entropy_out=ent_slice,
+                lse_buf=lse_buf,
+                correct_buf=correct_buf,
             )
+
+            if not use_prealloc_2d:
+                token_entropy[:, start:stop] = entropy
+                token_loss[:, start:stop] = t_loss
 
             if with_grad and piece_grad is not None:
                 grad[:, start:stop] = piece_grad
 
             total = total + part
-            entropies.append(entropy)
-            losses.append(token_loss)
             correct = correct + hits
 
-        del compute_weight, compute_bias
-
-        token_entropy = torch.cat(entropies, dim=1)
-        token_loss = torch.cat(losses, dim=1)
+        del logits_buf, compute_weight, compute_weight_t, compute_bias, lse_buf, correct_buf
 
         ctx.with_grad = with_grad
         if with_grad:

@@ -184,8 +184,18 @@ class FusedRoPEFunction(torch.autograd.Function):
         else:
             out_q_dtype = torch.promote_types(q.dtype, cos_c.dtype)
             out_k_dtype = torch.promote_types(k.dtype, cos_c.dtype)
-        out_q = torch.empty((bsz, n_heads_q, seq_len, head_dim), device=q.device, dtype=out_q_dtype)
-        out_k = torch.empty((bsz, n_heads_k, seq_len, head_dim), device=k.device, dtype=out_k_dtype)
+
+        # Preserve BSHD.transpose(1, 2) memory layout to match value_states & Cutlass FMHA SDPA
+        q_bshd = seq_len > 1 and n_heads_q > 1 and q.stride(2) > q.stride(1)
+        k_bshd = seq_len > 1 and n_heads_k > 1 and k.stride(2) > k.stride(1)
+        if q_bshd:
+            out_q = torch.empty((bsz, seq_len, n_heads_q, head_dim), device=q.device, dtype=out_q_dtype).transpose(1, 2)
+        else:
+            out_q = torch.empty((bsz, n_heads_q, seq_len, head_dim), device=q.device, dtype=out_q_dtype)
+        if k_bshd:
+            out_k = torch.empty((bsz, seq_len, n_heads_k, head_dim), device=k.device, dtype=out_k_dtype).transpose(1, 2)
+        else:
+            out_k = torch.empty((bsz, n_heads_k, seq_len, head_dim), device=k.device, dtype=out_k_dtype)
 
         grid = (bsz * seq_len, n_heads_q + n_heads_k)
         fused_rope_fwd_kernel[grid](
@@ -219,6 +229,8 @@ class FusedRoPEFunction(torch.autograd.Function):
         ctx.save_for_backward(cos_c, sin_c)
         ctx.q_dtype = q.dtype
         ctx.k_dtype = k.dtype
+        ctx.q_bshd = q_bshd
+        ctx.k_bshd = k_bshd
         ctx.bsz = bsz
         ctx.seq_len = seq_len
         ctx.n_heads_q = n_heads_q
@@ -238,16 +250,30 @@ class FusedRoPEFunction(torch.autograd.Function):
         if grad_k.stride(-1) != 1:
             grad_k = grad_k.contiguous()
 
-        dq = torch.empty(
-            (ctx.bsz, ctx.n_heads_q, ctx.seq_len, ctx.head_dim),
-            device=grad_q.device,
-            dtype=ctx.q_dtype,
-        )
-        dk = torch.empty(
-            (ctx.bsz, ctx.n_heads_k, ctx.seq_len, ctx.head_dim),
-            device=grad_k.device,
-            dtype=ctx.k_dtype,
-        )
+        if ctx.q_bshd:
+            dq = torch.empty(
+                (ctx.bsz, ctx.seq_len, ctx.n_heads_q, ctx.head_dim),
+                device=grad_q.device,
+                dtype=ctx.q_dtype,
+            ).transpose(1, 2)
+        else:
+            dq = torch.empty(
+                (ctx.bsz, ctx.n_heads_q, ctx.seq_len, ctx.head_dim),
+                device=grad_q.device,
+                dtype=ctx.q_dtype,
+            )
+        if ctx.k_bshd:
+            dk = torch.empty(
+                (ctx.bsz, ctx.seq_len, ctx.n_heads_k, ctx.head_dim),
+                device=grad_k.device,
+                dtype=ctx.k_dtype,
+            ).transpose(1, 2)
+        else:
+            dk = torch.empty(
+                (ctx.bsz, ctx.n_heads_k, ctx.seq_len, ctx.head_dim),
+                device=grad_k.device,
+                dtype=ctx.k_dtype,
+            )
 
         grid = (ctx.bsz * ctx.seq_len, ctx.n_heads_q + ctx.n_heads_k)
         fused_rope_bwd_kernel[grid](
