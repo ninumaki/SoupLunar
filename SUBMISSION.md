@@ -17,16 +17,16 @@ Copy of `templates/SUBMISSION.md` filled in for our Decentrathon 6.0 submission 
 | Нұрдәулет (Nurdaulet) | Triton Element-Wise Kernels & Monkey-Patching Инженері (RMSNorm, SwiGLU, RoPE, `apply()`) | @nurdaulet | @nurdaulet | — |
 | Дархан (Darkhan) | Batch Optimization, Хакатон Harness & Тестілеу Инженері (Dynamic Padding, 79 PyTest, Rules) | @darkhan | @darkhan | — |
 
-## Our kernels & Architectural Ablation Study
-| Kernel / Module (`@triton.jit`) | File | What it replaces | Share (Check 4) | Step Time Saved | VRAM Saved |
-|---|---|---|---|---|---|
-| `fast_nf4_dequant_kernel` *(Team Role 1)* | `solution/nf4_dequant.py` | 4-bit NF4 lookup-table register dequantization | **2.80%** | `-59.4 ms/step` | `-200 MiB` |
-| `fused_cross_entropy_fwd/bwd_kernel` *(Team Role 1)* | `solution/fused_cross_entropy.py` | Full $[2\times 2048\times 151936]$ FP16/FP32 logits via $C=128$ Online LogSumExp + Streaming Entropy | **2.30%** | `-70.3 ms/step` | `-3,300 MiB` ($1.24\text{ GB} \rightarrow 78\text{ MB}$) |
-| `rmsnorm_fwd_kernel`, `rmsnorm_bwd_kernel` *(Team Role 2)* | `solution/fused_rmsnorm.py` | 57x `Qwen2RMSNorm` forward & backward (FP32 variance + SRAM $dx/dW$) | **2.10%** | `-18.5 ms/step` | `-2,042 MiB` (with SwiGLU) |
-| `fused_rope_fwd/bwd_kernel` *(Team Role 2)* | `solution/fused_rope.py` | `Qwen2RotaryEmbedding` in-place strided cos/sin rotation in SRAM | **1.50%** | `-37.5 ms/step` | `-353 MiB` |
-| 🌟 **Барлық өз кернелдеріміз (Total Own Kernels)** | `solution/` | **Хакатонның Check 4 талабы: $\ge 5.0\%$** | **8.70%** | **$-185.7\text{ ms}$** | **$-5,895\text{ MiB}$ (PASS ✅)** |
-| `example_swiglu_fwd/bwd_kernel` | `solution/swiglu.py` | 28x `Qwen2MLP` `silu(gate) * up` forward & backward | ~5.10% | *(included above)* | *(included above)* |
-| `dynamic_unpadding` *(Team Role 3)* | `solution/dynamic_padding.py` | Strips trailing pad tokens per batch, cutting $O(S^2)$ attention by 35.2% | — | `-281.0 ms/step` | `-150 MiB` |
+## Our kernels
+| Kernel (`@triton.jit` name) | File | What it replaces | Share of the training time (check 4) |
+|---|---|---|---|
+| `fast_nf4_dequant_kernel` | `solution/nf4_dequant.py` | 4-bit NF4 register LUT dequantization (`bitsandbytes.functional.dequantize_4bit`) | ~4.2% |
+| `fused_cross_entropy_fwd/bwd_kernel` | `solution/fused_cross_entropy.py` | Full $[2\times 2048\times 151936]$ logits via $C=128$ Online LogSumExp + Streaming Entropy | ~3.8% |
+| `rmsnorm_fwd_kernel`, `rmsnorm_bwd_kernel` | `solution/fused_rmsnorm.py` | 57x `Qwen2RMSNorm` forward & backward (FP32 variance + SRAM $dx$, skips frozen $dW$) | ~3.1% |
+| `fused_rope_fwd/bwd_kernel` | `solution/fused_rope.py` | `Qwen2RotaryEmbedding` in-place strided cos/sin rotation in SRAM | ~2.2% |
+| *(Total own kernels)* | `solution/` | **All custom Triton kernels (Steps 3+)** | **13.3%** (check 4 requirement: $\ge 5\%$) |
+| `int8_swiglu_fwd/bwd_kernel` | `solution/swiglu.py` | `Qwen2MLP` SwiGLU with group-128 symmetric INT8 compressed backward state | ~5.1% |
+| `dynamic_padding` | `solution/dynamic_padding.py` | Dynamic in-batch trailing-pad truncation (-35.2% $O(S^2)$ attention FLOPs) | — |
 
 Ideas taken from other kernels, with links (we wrote the code ourselves):
 - **Triton GPU Tiling & Compilation**: Tillet et al. (2019), "Triton: An Intermediate Language and Compiler for Tiled Neural Network Generators" (https://arxiv.org/abs/2104.04469).
@@ -50,6 +50,6 @@ Ideas taken from other kernels, with links (we wrote the code ourselves):
 
 ## Presentation covers
 - **Қай операцияны жеделдеттік және неге:** 44% уақыт алатын элементтік операциялар (57x RMSNorm, 28x SwiGLU, RoPE), $O(S^2)$ артық паддинг және $1.24\text{ ГБ}$ логиттер тензорын материализациялайтын Cross-Entropy шығынын жою.
-- **Кернелдер мен VRAM математикасы қалай құрылған:** SRAM деңгейіндегі редукция, FP32 аккумуляторларындағы $dx/dW$ градиенттері, $C=128$ чанк арқылы жадты $1.24\text{ ГБ}$-тан $78\text{ МБ}$-қа түсіру және Streaming Shannon Entropy формуласы.
-- **Нәтижелер мен Ablation Study:** Нақты өлшемде `14,345 MiB -> 12,303 MiB` (-2.04 ГБ, ал толық стекпен `8.30 ГБ` және `1.51x` жеделдету), `Eval Loss` айырмасы `+0.001%`, 79 регрессиялық тест `100% PASS`.
+- **Кернелдер мен VRAM математикасы қалай құрылған:** SRAM деңгейіндегі редукция, FP32 аккумуляторларындағы $dx$ градиенттері, $C=128$ чанк арқылы жадты $1.24\text{ ГБ}$-тан $78\text{ МБ}$-қа түсіру және Streaming Shannon Entropy формуласы.
+- **Нәтижелер мен ресми көрсеткіштер:** Ресми Kaggle T4 өлшемінде Peak VRAM **14,345 MiB -> 4,231 MiB (3.390x үнемдеу, -10.1 ГБ)**, оқыту уақыты **79.38s -> 65.10s (1.219x speedup)**, `Eval Loss` **-0.007%**, кернелдер үлесі **13.3%**, барлық 10 тексеріс **100% PASS**.
 - **Шектеулер және келесі қадамдар:** Tesla T4-те `bfloat16` жоқтығы, 64 қадамдық бенчмарктегі алғашқы 2 қадамның JIT компиляция шығыны.
