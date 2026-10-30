@@ -86,24 +86,25 @@ def fused_cross_entropy_fwd_kernel(
         cols = col_offset + tl.arange(0, BLOCK_SIZE)
         mask = cols < vocab_size
 
-        logits = tl.load(
+        raw_logits = tl.load(
             row_logits_ptr + cols * stride_logits_col,
             mask=mask,
-            other=-1e30,
+            other=0.0,
         ).to(tl.float32)
 
-        block_max = tl.max(logits, axis=0)
-        block_argmax = tl.argmax(logits, axis=0) + col_offset
+        masked_logits = tl.where(mask, raw_logits, -1e30)
+        clean_logits = tl.where(mask, raw_logits, 0.0)
+
+        block_max = tl.max(masked_logits, axis=0)
+        block_argmax = tl.argmax(masked_logits, axis=0) + col_offset
 
         new_m = tl.maximum(m_val, block_max)
         alpha = tl.exp(m_val - new_m)
 
-        exp_logits = tl.exp(logits - new_m)
-        exp_logits = tl.where(mask, exp_logits, 0.0)
-        safe_logits = tl.where(mask, logits, 0.0)
+        exp_logits = tl.where(mask, tl.exp(masked_logits - new_m), 0.0)
 
         s_val = s_val * alpha + tl.sum(exp_logits, axis=0)
-        sz_val = sz_val * alpha + tl.sum(safe_logits * exp_logits, axis=0)
+        sz_val = sz_val * alpha + tl.sum(clean_logits * exp_logits, axis=0)
 
         is_new_max = block_max > max_val
         max_val = tl.where(is_new_max, block_max, max_val)
@@ -174,14 +175,14 @@ def fused_cross_entropy_bwd_kernel(
         cols = col_offset + tl.arange(0, BLOCK_SIZE)
         mask = cols < vocab_size
 
-        logits = tl.load(
+        raw_logits = tl.load(
             row_logits_ptr + cols * stride_logits_col,
             mask=mask,
-            other=-1e30,
+            other=0.0,
         ).to(tl.float32)
 
-        probs = tl.exp(logits - lse)
-        probs = tl.where(mask, probs, 0.0)
+        masked_logits = tl.where(mask, raw_logits, -1e30)
+        probs = tl.where(mask, tl.exp(masked_logits - lse), 0.0)
 
         indicator = tl.where(cols == label, 1.0, 0.0)
         dlogits = (probs - indicator) * scale
@@ -385,7 +386,8 @@ class _TritonChunkedHeadLoss(torch.autograd.Function):
         if not ctx.with_grad:
             return (None,) * 7
         (grad,) = ctx.saved_tensors
-        return (grad * grad_loss.to(grad.dtype), None, None, None, None, None, None)
+        scaled_grad = (grad.float() * grad_loss.float()).to(grad.dtype)
+        return (scaled_grad, None, None, None, None, None, None)
 
 
 # ---------------------------------------------------------------------------

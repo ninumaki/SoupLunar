@@ -178,8 +178,12 @@ class FusedRoPEFunction(torch.autograd.Function):
         stride_cos_b = 0 if cos_c.shape[0] == 1 else cos_c.stride(0)
         stride_cos_s = cos_c.stride(1)
 
-        out_q_dtype = torch.promote_types(q.dtype, cos_c.dtype)
-        out_k_dtype = torch.promote_types(k.dtype, cos_c.dtype)
+        if q.is_cuda and torch.is_autocast_enabled("cuda"):
+            out_q_dtype = q.dtype
+            out_k_dtype = k.dtype
+        else:
+            out_q_dtype = torch.promote_types(q.dtype, cos_c.dtype)
+            out_k_dtype = torch.promote_types(k.dtype, cos_c.dtype)
         out_q = torch.empty((bsz, n_heads_q, seq_len, head_dim), device=q.device, dtype=out_q_dtype)
         out_k = torch.empty((bsz, n_heads_k, seq_len, head_dim), device=k.device, dtype=out_k_dtype)
 
