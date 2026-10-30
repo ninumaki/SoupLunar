@@ -342,16 +342,16 @@ def create_deck():
     p2.text = (
         "\n1. Кепілдендірілген 15 Ұпай (Құжаттама): ТАЛАПТАРҒА ТОЛЫҚ САЙ README.md, SUBMISSION.md.\n"
         "2. Жұмыс істеуіне 20 Ұпай: 10/10 автоматты тексеруден және 79 Soup регрессиялық тестінен өтті.\n"
-        "3. Жылдамдық & Жад Ұпайы: 1.23x жеделдету, 2.5 ГБ VRAM үнемдеу, өз кернелдеріміздің үлесі 7.84%.\n"
-        "4. Дәлдік: Жасырын қазақша деректерде оқыту сапасы базамен толық сәйкес (Delta = -0.01%).\n\n"
-        "🔗 Kaggle Public Run: kaggle.com/code/ruekdp/notebookd4dc02b276\n"
-        "🔗 GitHub Repo: github.com/ninumaki/SoupLunar\n\n"
+        "3. Жылдамдық & Жад Ұпайы: 1.22x жеделдету, 10.1 ГБ VRAM үнемдеу (14.3 ГБ -> 4.2 ГБ), өз кернелдеріміздің үлесі 13.3%.\n"
+        "4. Дәлдік: Жасырын қазақша деректерде оқыту сапасы базамен толық сәйкес (Eval Loss Delta = -0.007%).\n\n"
+        "🔗 Kaggle Public Run: kaggle.com/code/bolebaybekbolat/notebookc88b010a21\n"
+        "🔗 GitHub Repo: github.com/BAITC-Hacks/hack-e24e6808-lunarteam\n\n"
         "Назарларыңызға рақмет! Сұрақтарыңызға жауап беруге дайынбыз!"
     )
     p2.font.size = Pt(14)
     p2.font.color.rgb = c_white
 
-    output_path = "/home/togzhan/Рабочий стол/децетратон/presentation.pptx"
+    output_path = "presentation.pptx"
     prs.save(output_path)
     print(f"Presentation saved successfully to: {output_path}")
 

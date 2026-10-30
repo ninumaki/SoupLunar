@@ -4,7 +4,6 @@ Copy of `templates/SUBMISSION.md` filled in for our Decentrathon 6.0 submission 
 
 ## Links
 - Official Hackathon Repository: https://github.com/BAITC-Hacks/hack-e24e6808-lunarteam
-- Team Repository: https://github.com/ninumaki/SoupLunar
 - Public Kaggle notebook, the saved version (`COMMIT` in it = the final commit; the same link is in our README):
   https://www.kaggle.com/code/bolebaybekbolat/notebookc88b010a21
 - Presentation: [PRESENTATION.md](./PRESENTATION.md) (`presentation.pptx`)
