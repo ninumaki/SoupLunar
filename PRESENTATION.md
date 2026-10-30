@@ -3,7 +3,7 @@
 > **Іс-шара:** Decentrathon 6.0 — Soup Kernel Challenge  
 > **Тақырыбы:** Оңтайландырылған Triton Кернелдері арқылы Qwen2.5 Fine-Tuning Жеделдету мен Жадты Үнемдеу  
 > **Спикер және 4-рөл жауаптысы:** Тоғжан (Техникалық Құжаттама, Аналитика, Kaggle Релиз және Питч)  
-> **Команда:** Soup Optimizers  
+> **Команда:** LunarTeam  
 > **Дайын слайд файлы:** `presentation.pptx` (репозиторийде бар)
 
 ---
@@ -20,7 +20,12 @@
 * **Тақырыбы:** Triton Кернелдері арқылы Qwen2.5 Fine-Tuning Жеделдету мен Жадты Үнемдеу
 * **Қосымша тақырып:** Kaggle Tesla T4 GPU-да 2.5 ГБ VRAM үнемдеу және оқыту қадамдарын 1.35x жеделдету
 * **Спикер:** Тоғжан (4-рөл: Техникалық Құжаттама, Kaggle және Питч)
-* **Команда:** Soup Optimizers | Decentrathon 6.0
+* **Команда:** LunarTeam | Decentrathon 6.0
+* **Команда құрамы:**
+  * **Тоғжан (Role 4):** Техникалық Құжаттама, Аналитика, Kaggle Релиз, Демо-бейнебаян және Питч (Team Lead)
+  * **Бекболат (Role 1):** Техникалық Лид & GPU Kernel Архитекторы (Fused Cross-Entropy, NF4 Dequantization)
+  * **Нұрдәулет (Role 2):** Triton Element-Wise Kernels & Monkey-Patching Инженері (RMSNorm, SwiGLU, `apply()`)
+  * **Дархан (Role 3):** Batch Optimization, Хакатон Harness & Тестілеу Инженері (Dynamic Unpadding, PyTest 79 тесті)
 
 ---
 
@@ -92,4 +97,4 @@
 * **Өнімділік:** 1.23x жеделдету және 2.5 ГБ жадты үнемдеу.
 * **Ресурс сілтемелері:**
   * Kaggle Notebook: [Kaggle Run](https://www.kaggle.com/code/togzhan/soup-kernel-challenge-t4)
-  * GitHub Repo: [MakazhanAlpamys/soup-kernel-challenge](https://github.com/MakazhanAlpamys/soup-kernel-challenge)
+  * GitHub Repo: [ninumaki/SoupLunar](https://github.com/ninumaki/SoupLunar)

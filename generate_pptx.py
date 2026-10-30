@@ -71,7 +71,7 @@ def create_deck():
     p.font.color.rgb = c_gray
 
     p = tf.add_paragraph()
-    p.text = "\nКоманда: Soup Optimizers  |  Спикер & Автор: Тоғжан (Role 4: Құжаттама, Kaggle және Питч)"
+    p.text = "\nКоманда: LunarTeam  |  Спикер & Автор: Тоғжан (Role 4: Құжаттама, Kaggle және Питч)"
     p.font.size = Pt(14)
     p.font.bold = True
     p.font.color.rgb = c_green
@@ -345,7 +345,7 @@ def create_deck():
         "3. Жылдамдық & Жад Ұпайы: 1.23x жеделдету, 2.5 ГБ VRAM үнемдеу, өз кернелдеріміздің үлесі 7.84%.\n"
         "4. Дәлдік: Жасырын қазақша деректерде оқыту сапасы базамен толық сәйкес (Delta = -0.01%).\n\n"
         "🔗 Kaggle Public Run: kaggle.com/code/togzhan/soup-kernel-challenge-t4\n"
-        "🔗 GitHub Repo: github.com/MakazhanAlpamys/soup-kernel-challenge (Commit: a90cb89)\n\n"
+        "🔗 GitHub Repo: github.com/ninumaki/SoupLunar\n\n"
         "Назарларыңызға рақмет! Сұрақтарыңызға жауап беруге дайынбыз!"
     )
     p2.font.size = Pt(14)

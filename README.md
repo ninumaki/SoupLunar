@@ -1,14 +1,14 @@
 # Soup Kernel Challenge — Decentrathon 6.0 🚀
 ### Оңтайландырылған Triton Кернелдері арқылы Soup Fine-Tuning Жеделдету мен Жадты Үнемдеу
 
-> **Команда:** Soup Optimizers (Togzhan & Team)  
+> **Команда:** LunarTeam (Тоғжан, Бекболат, Нұрдәулет, Дархан)  
 > **Миссия:** Акысыз Kaggle Tesla T4 GPU-да `Qwen2.5-1.5B-Instruct` моделін LoRA арқылы оқытуды жеделдету, бейнежад (VRAM) шығынын еселеп азайту және барлық 10 тексеруден (harness checks) 100% өту.
 
 ---
 
 ## 📌 Түйінді Сілтемелер (Quick Links)
 * 🔗 **Ашық Kaggle Ноутбугы (Public Notebook):** [Kaggle Notebook Run](https://www.kaggle.com/code/togzhan/soup-kernel-challenge-t4) *(Соңғы `COMMIT` хэшімен сақталған нұсқа)*
-* 🔗 **GitHub Репозиторий және Соңғы Коммит:** [GitHub Commit](https://github.com/MakazhanAlpamys/soup-kernel-challenge/commit/HEAD)
+* 🔗 **GitHub Репозиторий және Соңғы Коммит:** [ninumaki/SoupLunar](https://github.com/ninumaki/SoupLunar) ([Соңғы коммит](https://github.com/ninumaki/SoupLunar/commit/HEAD))
 * 🎬 **3-минуттық Демо-бейнебаян:** [YouTube / Google Drive Demo Link](https://youtu.be/demo_placeholder)
 * 📊 **Презентация (Слайдтар):** [Презентация құжаты](./PRESENTATION.md)
 
@@ -153,7 +153,7 @@ $$\text{SwiGLU}(x) = \text{SiLU}(\text{Gate}(x)) \odot \text{Up}(x) = (\text{gat
 3. **Репозиторий мен коммитті растау:**  
    Ноутбуктің 1-ші ұяшығында сілтеме дұрыс көрсетілгеніне көз жеткізіңіз:
    ```python
-   REPO_URL = "https://github.com/MakazhanAlpamys/soup-kernel-challenge.git"
+   REPO_URL = "https://github.com/ninumaki/SoupLunar.git"
    COMMIT = ""  # Немесе нақты бекітілген commit SHA
    ```
 4. **Іске қосу:**  
@@ -247,9 +247,11 @@ python harness/score.py runs/result.json
 
 ---
 
-## 👩‍💻 Команда Құрамы және Рөлдер (Team)
-* **Тоғжан (Role 4):** Техникалық Құжаттама, Аналитика, Kaggle Релиз, Бейнебаян және Питч.
-* **ML Инженерлері:** Triton Кернелдерін әзірлеу, Soup Wrapper интеграциясы, Профайлинг.
+## 👩‍💻 Команда Құрамы және Рөлдер (LunarTeam)
+* **Тоғжан (Role 4):** Техникалық Құжаттама, Аналитика, Kaggle Релиз, Демо-бейнебаян және Питч (Team Lead / Captain).
+* **Бекболат (Role 1):** Техникалық Лид & GPU Kernel Архитекторы (Fused Chunked Cross-Entropy, NF4 Dequantization/MatMul).
+* **Нұрдәулет (Role 2):** Triton Element-Wise Kernels & Monkey-Patching Инженері (Fused RMSNorm, Fused SwiGLU/RoPE, `apply()`).
+* **Дархан (Role 3):** Batch Optimization, Хакатон Harness & Тестілеу Инженері (Dynamic Unpadding, PyTest 79 тексеруі, `check_rules.py`).
 
 ---
 *Лицензия: Apache-2.0. Барлық авторлық және байқау ережелері сақталған.*

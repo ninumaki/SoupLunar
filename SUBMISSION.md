@@ -1,21 +1,21 @@
-# Submission: Soup Optimizers
+# Submission: LunarTeam
 
 Copy of `templates/SUBMISSION.md` filled in for our Decentrathon 6.0 submission.
 
 ## Links
-- Repository, final commit: https://github.com/MakazhanAlpamys/soup-kernel-challenge/commit/HEAD
+- Repository, final commit: https://github.com/ninumaki/SoupLunar/commit/HEAD
 - Public Kaggle notebook, the saved version (`COMMIT` in it = the sha above; the same link is in our README):
   https://www.kaggle.com/code/togzhan/soup-kernel-challenge-t4?scriptVersionId=1
 - Demo video (up to 3 minutes): https://youtu.be/demo_placeholder
 - Presentation: https://docs.google.com/presentation/d/demo_placeholder/edit (және репозиторийдегі [PRESENTATION.md](./PRESENTATION.md))
 
-## Team (up to 4 people)
+## Team (LunarTeam — 4 people)
 | Name | Role | GitHub | Kaggle | Contact (captain) |
 |---|---|---|---|---|
-| Тоғжан (Togzhan) | Техникалық Құжаттама, Аналитика, Kaggle Релиз және Питч | @togzhan | @togzhan | @togzhan_tg (Captain) |
-| Команда мүшесі 2 | GPU / Triton Кернел Инженері (RMSNorm & Kernel Tuning) | @member2 | @member2 | @member2_tg |
-| Команда мүшесі 3 | Soup CLI Integrator & Profiling Engineer | @member3 | @member3 | @member3_tg |
-| Команда мүшесі 4 | ML QA & Verification Engineer (Regression & Rules) | @member4 | @member4 | @member4_tg |
+| Тоғжан (Togzhan) | Техникалық Құжаттама, Аналитика, Kaggle Релиз және Питч | @ninumaki | @togzhan | @togzhan_tg (Captain) |
+| Бекболат (Bekbolat) | Техникалық Лид & GPU Kernel Архитекторы (Fused Cross-Entropy & NF4) | @bekbolat | @bekbolat | — |
+| Нұрдәулет (Nurdaulet) | Triton Element-Wise Kernels & Monkey-Patching Инженері (RMSNorm, SwiGLU, apply) | @nurdaulet | @nurdaulet | — |
+| Дархан (Darkhan) | Batch Optimization, Хакатон Harness & Тестілеу Инженері (Unpadding, Tests) | @darkhan | @darkhan | — |
 
 ## Our kernels
 | Kernel (`@triton.jit` name) | File | What it replaces | Share of the training time (check 4) |
