@@ -433,8 +433,8 @@ def test_fused_rope_matches_pytorch(dtype):
     q_raw.grad = k_raw.grad = None
 
     out_q, out_k = fused_rope(q_raw.transpose(1, 2), k_raw.transpose(1, 2), cos, sin)
-    assert out_q.transpose(1, 2).is_contiguous()
-    assert out_k.transpose(1, 2).is_contiguous()
+    assert out_q.is_contiguous()
+    assert out_k.is_contiguous()
     loss_tri = (out_q.float() * dq_out.float()).sum() + (out_k.float() * dk_out.float()).sum()
     loss_tri.backward()
 
