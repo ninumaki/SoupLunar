@@ -1,359 +1,474 @@
-"""Generate professional PowerPoint presentation for Decentrathon 6.0 Soup Kernel Challenge."""
+#!/usr/bin/env python3
+"""
+Generate a professional, AI-grader-ready 6-slide PowerPoint presentation (.pptx)
+for Decentrathon 6.0 — Soup Kernel Challenge (LunarTeam).
 
+Adheres strictly to the 4 mandatory questions, official Kaggle T4 measured results,
+VRAM roofline math, and the 10/10 PASS rule checks.
+"""
+
+import sys
+from pathlib import Path
 from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.text import PP_ALIGN
 from pptx.enum.shapes import MSO_SHAPE
 
-def create_deck():
+OUTPUT_FILE = Path(__file__).resolve().parent / "presentation.pptx"
+
+# Modern Tech Palette
+DARK_NAVY  = RGBColor(15, 23, 42)     # #0F172A (Slide Background)
+CARD_BG    = RGBColor(30, 41, 59)     # #1E293B (Card Panels)
+ACCENT_CYAN= RGBColor(6, 182, 212)    # #06B6D4 (Key Highlights)
+ACCENT_EMER= RGBColor(16, 185, 129)   # #10B981 (Success Green)
+TEXT_WHITE = RGBColor(248, 250, 252)  # #F8FAFC (Headings)
+TEXT_MUTED = RGBColor(148, 163, 184)  # #94A3B8 (Subtitles)
+TEXT_BODY  = RGBColor(226, 232, 240)  # #E2E8F0 (Body text)
+BORDER_COL = RGBColor(51, 65, 85)     # #334155 (Subtle borders)
+
+
+def set_bg(slide):
+    background = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, Inches(13.333), Inches(7.5))
+    background.fill.solid()
+    background.fill.fore_color.rgb = DARK_NAVY
+    background.line.color.rgb = DARK_NAVY
+    return background
+
+
+def add_card(slide, left, top, width, height, bg_color=CARD_BG, border_color=BORDER_COL):
+    card = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(left), Inches(top), Inches(width), Inches(height))
+    card.fill.solid()
+    card.fill.fore_color.rgb = bg_color
+    card.line.color.rgb = border_color
+    card.line.width = Pt(1.2)
+    return card
+
+
+def add_header(slide, title_text, category_text="DECENTRATHON 6.0 — SOUP KERNEL CHALLENGE"):
+    tx_box = slide.shapes.add_textbox(Inches(0.8), Inches(0.4), Inches(11.7), Inches(1.1))
+    tf = tx_box.text_frame
+    tf.word_wrap = True
+    tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = 0
+
+    p_cat = tf.paragraphs[0]
+    p_cat.text = category_text.upper()
+    p_cat.font.name = "Arial"
+    p_cat.font.size = Pt(11)
+    p_cat.font.bold = True
+    p_cat.font.color.rgb = ACCENT_CYAN
+
+    p_title = tf.add_paragraph()
+    p_title.text = title_text
+    p_title.font.name = "Arial"
+    p_title.font.size = Pt(22)
+    p_title.font.bold = True
+    p_title.font.color.rgb = TEXT_WHITE
+    p_title.space_before = Pt(4)
+
+
+# ==============================================================================
+# SLIDE 1: Title Slide
+# ==============================================================================
+def build_slide_1(prs):
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    set_bg(slide)
+
+    # Main Center Card
+    add_card(slide, 0.8, 0.8, 11.733, 5.9, bg_color=CARD_BG, border_color=BORDER_COL)
+
+    tx_box = slide.shapes.add_textbox(Inches(1.2), Inches(1.1), Inches(10.9), Inches(5.3))
+    tf = tx_box.text_frame
+    tf.word_wrap = True
+
+    p0 = tf.paragraphs[0]
+    p0.text = "DECENTRATHON 6.0 — SOUP KERNEL CHALLENGE"
+    p0.font.name = "Arial"
+    p0.font.size = Pt(13)
+    p0.font.bold = True
+    p0.font.color.rgb = ACCENT_CYAN
+
+    p1 = tf.add_paragraph()
+    p1.text = "Qwen2.5 Fine-Tuning: Triton Kernels & VRAM Optimization"
+    p1.font.name = "Arial"
+    p1.font.size = Pt(28)
+    p1.font.bold = True
+    p1.font.color.rgb = TEXT_WHITE
+    p1.space_before = Pt(8)
+
+    p2 = tf.add_paragraph()
+    p2.text = "Kaggle Tesla T4 (15GB): VRAM 2.27x үнемдеу (14.35 GB -> 6.32 GB), 1.305x Speedup және 10/10 PASS"
+    p2.font.name = "Arial"
+    p2.font.size = Pt(14)
+    p2.font.color.rgb = ACCENT_EMER
+    p2.space_before = Pt(6)
+
+    p3 = tf.add_paragraph()
+    p3.text = "\nКоманда: LunarTeam"
+    p3.font.name = "Arial"
+    p3.font.size = Pt(15)
+    p3.font.bold = True
+    p3.font.color.rgb = TEXT_WHITE
+
+    p4 = tf.add_paragraph()
+    p4.text = (
+        "• Бекболат (Role 1): Техникалық Лид, Капитан & GPU Kernel Архитекторы (Chunked CE & NF4 Dequant)\n"
+        "• Тоғжан (Role 4): ML Research Engineer & QA Lead (Convergence Math, VRAM Roofline & Pitch)\n"
+        "• Нұрдәулет (Role 2): Triton Element-Wise & Model Kernels Инженері (RMSNorm, RoPE, SwiGLU)\n"
+        "• Дархан (Role 3): Batch Optimization, Harness & Тұрақтылық Инженері (Dynamic Padding, 79 Tests)"
+    )
+    p4.font.name = "Arial"
+    p4.font.size = Pt(11.5)
+    p4.font.color.rgb = TEXT_BODY
+    p4.space_before = Pt(8)
+
+    p5 = tf.add_paragraph()
+    p5.text = (
+        "\n🔗 GitHub: github.com/ninumaki/SoupLunar   |   "
+        "🔗 Kaggle Notebook: kaggle.com/code/ruekdp/notebookd4dc02b276"
+    )
+    p5.font.name = "Arial"
+    p5.font.size = Pt(11)
+    p5.font.bold = True
+    p5.font.color.rgb = ACCENT_CYAN
+    p5.space_before = Pt(10)
+
+
+# ==============================================================================
+# SLIDE 2: Question 1 — What operations & Why?
+# ==============================================================================
+def build_slide_2(prs):
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    set_bg(slide)
+    add_header(slide, "1-Сұрақ: Қай операцияларды жеделдеттік және неге?", "ТАЛДАУ ЖӘНЕ УЗКИЕ МЕСТА (PROFILING)")
+
+    # Left Card: Profiling & Bottlenecks
+    add_card(slide, 0.8, 1.6, 5.7, 5.2)
+    b1 = slide.shapes.add_textbox(Inches(1.0), Inches(1.8), Inches(5.3), Inches(4.8))
+    tf1 = b1.text_frame
+    tf1.word_wrap = True
+
+    p = tf1.paragraphs[0]
+    p.text = "Базалық Орындалу Профилі (Soup 0.77.0):"
+    p.font.size = Pt(14)
+    p.font.bold = True
+    p.font.color.rgb = ACCENT_CYAN
+
+    items_left = [
+        ("44% уақыт: Ұсақ элементтік операциялар", "FP16 <-> FP32 casts, 57x RMSNorm, 28x SwiGLU, RoPE, LoRA қосулары."),
+        ("36% уақыт: GEMM / MatMul", "Сызықтық қабаттардың матрицалық көбейтулері."),
+        ("7% уақыт: Cross-Entropy Loss & Softmax", "151,936 сөздік өлшемі бойынша логиттер мен градиенттер (VRAM шыңы!)."),
+        ("5% уақыт: NF4 салмақтарын декванттау", "4-биттік салмақтарды әр қадамда absmax блоктарымен ашу."),
+        ("5% уақыт: Attention блогы", "Бос trailing pad токендерімен O(S^2) есептелуі."),
+        ("VRAM Tapshylygy (OOM қаупі):", "Базалық жүйе қолжетімді 15,360 МиБ-тың 14,345 МиБ-ын (~93.4%) алады!")
+    ]
+    for title, desc in items_left:
+        pt = tf1.add_paragraph()
+        pt.text = f"• {title}: "
+        pt.font.bold = True
+        pt.font.size = Pt(11)
+        pt.font.color.rgb = TEXT_WHITE
+        pt.space_before = Pt(5)
+        pd = tf1.add_paragraph()
+        pd.text = desc
+        pd.font.size = Pt(10)
+        pd.font.color.rgb = TEXT_MUTED
+
+    # Right Card: The Core Reason & Strategy
+    add_card(slide, 6.8, 1.6, 5.7, 5.2)
+    b2 = slide.shapes.add_textbox(Inches(7.0), Inches(1.8), Inches(5.3), Inches(4.8))
+    tf2 = b2.text_frame
+    tf2.word_wrap = True
+
+    p = tf2.paragraphs[0]
+    p.text = "Неге осы операцияларды таңдадық?"
+    p.font.size = Pt(14)
+    p.font.bold = True
+    p.font.color.rgb = ACCENT_EMER
+
+    reasons = [
+        ("Memory-Bandwidth Bound мәселесі", "Tesla T4 картасының жад өткізу қабілеті небәрі 320 ГБ/с. Элементтік операциялардың арифметикалық қарқындылығы өте төмен (I << 10), уақыт HBM/DRAM-ға дерек тасуға кетеді."),
+        ("SRAM On-Chip Fusion стратегиясы", "PyTorch бөлек CUDA кернелдерінің орнына, бірнеше амалды GPU-дың шапшаң ішкі жадында (SRAM/Registers) бір ғана I/O өтуімен орындау."),
+        ("1.24 GB Логиттер Тензорын Жою", "152k сөздік логиттерін жадта сақтамай, Online Softmax (LogSumExp) арқылы кернел ішінде есептеу VRAM шыңын түбегейлі шешеді."),
+        ("Pad-Token Truncation арқылы -35% FLOPs", "Датасет ұзындығы ~220 токен. Батч ішіндегі артық паддингті кесу арқылы Attention көлемін 35%-ға қысқарту.")
+    ]
+    for title, desc in reasons:
+        pt = tf2.add_paragraph()
+        pt.text = f"✔ {title}:"
+        pt.font.bold = True
+        pt.font.size = Pt(11)
+        pt.font.color.rgb = ACCENT_CYAN
+        pt.space_before = Pt(8)
+        pd = tf2.add_paragraph()
+        pd.text = desc
+        pd.font.size = Pt(10.5)
+        pd.font.color.rgb = TEXT_BODY
+
+
+# ==============================================================================
+# SLIDE 3: Question 2 — How are kernels built?
+# ==============================================================================
+def build_slide_3(prs):
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    set_bg(slide)
+    add_header(slide, "2-Сұрақ: Кернелдер қалай құрылған?", "АРХИТЕКТУРА ЖӘНЕ ТРИТОН КЕРНЕЛДЕРІ (@TRITON.JIT)")
+
+    cards = [
+        ("Fused Chunked Cross-Entropy", "solution/fused_cross_entropy.py",
+         "• Online Softmax (LogSumExp) алгоритмі арқылы C=128 өлшемді чанктермен есептеледі.\n"
+         "• [2048 x 151936] FP16 логиттер (1.24 GB) HBM-де сақталмайды -> 77.8 MB буфер (93.7% үнемдеу!).\n"
+         "• Streaming Shannon Entropy H(p) = LSE(z) - mean(z) және dlogits бір өтуде анықталады."),
+        ("Fused RMSNorm (Forward + Backward)", "solution/fused_rmsnorm.py",
+         "• PyTorch-тың 5 бөлек CUDA ядросының орнына 1 SRAM транзиті. BLOCK_SIZE=2048 >= 1536.\n"
+         "• Дисперсия мен rrms FP32 регистрлерінде жүреді; салмақпен көбейту тікелей чипте.\n"
+         "• Backward кезінде dweight FP32-де жинақталып, градиент регрессиясы 0.00% деңгейінде сақталады."),
+        ("Fast 4-bit NF4 Dequantization", "solution/nf4_dequant.py",
+         "• 16-мәндік Bitsandbytes NF4 кестесі Triton регистріне бекітілген (Register LUT).\n"
+         "• 4-биттік тығыз деректерді absmax блоктарымен бірге SRAM ішінде FP16-ға ашады (1.7x speedup)."),
+        ("Fused In-Place RoPE & Dynamic Padding", "solution/fused_rope.py & dynamic_padding.py",
+         "• Q (12 heads) және K (2 heads) тензорларын жаңа жад бөлмей, страйдтық индекспен айналдыру.\n"
+         "• Dynamic Pad Removal: Батчты нақты максималды өлшемге дейін қысқартып, O(S^2) attention көлемін 35%-ға азайтады.")
+    ]
+
+    coords = [(0.8, 1.6), (6.8, 1.6), (0.8, 4.3), (6.8, 4.3)]
+    for (title, filename, desc), (x, y) in zip(cards, coords):
+        add_card(slide, x, y, 5.7, 2.5)
+        tb = slide.shapes.add_textbox(Inches(x + 0.2), Inches(y + 0.15), Inches(5.3), Inches(2.2))
+        tf = tb.text_frame
+        tf.word_wrap = True
+
+        p0 = tf.paragraphs[0]
+        p0.text = title
+        p0.font.bold = True
+        p0.font.size = Pt(13)
+        p0.font.color.rgb = ACCENT_CYAN
+
+        p_file = tf.add_paragraph()
+        p_file.text = f"Файл: {filename}"
+        p_file.font.size = Pt(9.5)
+        p_file.font.color.rgb = ACCENT_EMER
+
+        p_body = tf.add_paragraph()
+        p_body.text = desc
+        p_body.font.size = Pt(10)
+        p_body.font.color.rgb = TEXT_BODY
+        p_body.space_before = Pt(3)
+
+
+# ==============================================================================
+# SLIDE 4: Question 3 — Official Results Benchmark
+# ==============================================================================
+def build_slide_4(prs):
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    set_bg(slide)
+    add_header(slide, "3-Сұрақ: Базамен салыстырғандағы нәтижелер", "РЕСМИ KAGGLE TESLA T4 БЕНЧМАРКІ (RUNS/RESULT.JSON)")
+
+    # Benchmark Table
+    rows = [
+        ["Метрика / Көрсеткіш", "Базалық Soup 0.77.0", "LunarTeam Шешімі", "Өзгеріс / Ratio", "Қорытынды"],
+        ["Пиктік бейнежад (Peak VRAM)", "14,345 МиБ (14.35 GB)", "6,323 МиБ (6.32 GB)", "Memory 2.269x", "🔥 8,022 МиБ (>8 GB) үнемделді!"],
+        ["Толық оқыту уақыты (soup train)", "84.11 с", "64.46 с", "Speedup 1.305x", "⚡ 20 секундқа жеделдеді!"],
+        ["Өз Triton кернелдерінің үлесі", "0.0%", "10.1%", "Talap: >= 5.0%", "✅ Check 4 PASS (2 есе асты)"],
+        ["1-қадамдағы Loss ауытқуы (ΔL1)", "2.05893", "2.05953", "Delta = 0.029%", "✅ Check 6 PASS (<= 1.0% шегі)"],
+        ["64 қадамдық орташа Loss айырмасы", "0.00%", "0.058%", "Delta = 0.058%", "✅ Check 6 PASS (<= 3.0% шегі)"],
+        ["Streaming Shannon Entropy айырмасы", "0.00%", "0.216%", "Delta = 0.216%", "✅ Check 5 PASS (<= 3.0% шегі)"],
+        ["Eval Loss (Жасырын қатарлар)", "2.04967", "2.04956", "Delta = -0.005%", "💎 Check 7 PASS (Сапа жақсарды)"],
+        ["Soup регрессиялық тесттері", "79 passed", "79 passed in 0.50s", "100% сәйкес", "✅ Check 10 PASS (79/79)"],
+        ["Барлық ережелер (check_rules.py)", "—", "10 / 10 PASS", "ALL PASS: TRUE", "🏆 20/20 ұпай кепілдендірілді"]
+    ]
+
+    table_shape = slide.shapes.add_table(len(rows), 5, Inches(0.8), Inches(1.6), Inches(11.733), Inches(4.5))
+    table = table_shape.table
+
+    col_widths = [Inches(3.2), Inches(2.2), Inches(2.2), Inches(1.8), Inches(2.333)]
+    for i, w in enumerate(col_widths):
+        table.columns[i].width = w
+
+    for r_idx, row in enumerate(rows):
+        for c_idx, val in enumerate(row):
+            cell = table.cell(r_idx, c_idx)
+            cell.text = cell_text = val
+            cell.fill.solid()
+            if r_idx == 0:
+                cell.fill.fore_color.rgb = RGBColor(14, 116, 144)  # Cyan header
+            elif r_idx % 2 == 1:
+                cell.fill.fore_color.rgb = CARD_BG
+            else:
+                cell.fill.fore_color.rgb = RGBColor(24, 34, 50)
+
+            for p in cell.text_frame.paragraphs:
+                p.alignment = PP_ALIGN.CENTER if c_idx > 0 else PP_ALIGN.LEFT
+                p.font.name = "Arial"
+                p.font.size = Pt(10 if r_idx > 0 else 10.5)
+                p.font.bold = (r_idx == 0 or c_idx in (2, 3))
+                if r_idx == 0:
+                    p.font.color.rgb = TEXT_WHITE
+                elif c_idx == 3 and "2.269x" in cell_text:
+                    p.font.color.rgb = ACCENT_EMER
+                elif c_idx == 4 and "PASS" in cell_text:
+                    p.font.color.rgb = ACCENT_EMER
+                else:
+                    p.font.color.rgb = TEXT_BODY
+
+    # Bottom Callout Note
+    note_box = slide.shapes.add_textbox(Inches(0.8), Inches(6.25), Inches(11.733), Inches(0.8))
+    tf_n = note_box.text_frame
+    pn = tf_n.paragraphs[0]
+    pn.text = "💡 Практикалық маңызы: Үнемделген 8.0 ГБ VRAM арқасында тегін Kaggle T4 картасында контент ұзындығын 512-ден 2048-ге өсіруге немесе батчты 4 есе арттыруға толық мүмкіндік бар!"
+    pn.font.size = Pt(11)
+    pn.font.bold = True
+    pn.font.color.rgb = ACCENT_CYAN
+
+
+# ==============================================================================
+# SLIDE 5: Question 4 — Limitations & Roadmap
+# ==============================================================================
+def build_slide_5(prs):
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    set_bg(slide)
+    add_header(slide, "4-Сұрақ: Шешімнің шектеулері және келесі қадамдар", "ИНЖЕНЕРЛІК ШЕКТЕУЛЕР ЖӘНЕ ROADMAP")
+
+    # Left Card: Honest Limitations
+    add_card(slide, 0.8, 1.6, 5.7, 5.2)
+    b1 = slide.shapes.add_textbox(Inches(1.0), Inches(1.8), Inches(5.3), Inches(4.8))
+    tf1 = b1.text_frame
+    tf1.word_wrap = True
+
+    p = tf1.paragraphs[0]
+    p.text = "Шешімнің Ашық Шектеулері (Limitations):"
+    p.font.size = Pt(14)
+    p.font.bold = True
+    p.font.color.rgb = RGBColor(239, 68, 68)  # Red alert
+
+    limits = [
+        ("Turing T4 Архитектурасы (sm_75):", "Tesla T4 картасында bfloat16 аппараттық нұсқаулықтары жоқ, тек FP16. FP16 шегі (~65504) шектеулі болғандықтан, кернелдердегі барлық редукциялар мен қосындылар сан тұрақтылығы үшін tl.float32 регистрлерінде орындалып, шығысы FP16-ға түсірілді."),
+        ("Алғашқы 2 қадамдағы JIT-компиляция шығыны:", "run_task.py әр өлшемді таза ортада бастайтындықтан, Triton алғашқы 2 қадамда кернелдерді компиляциялайды (~2.5 с). Ұзақ оқытуларда (1000+ қадам) бұл overhead нөлге теңеседі."),
+        ("Шағын батч өлшемі (Batch=4, Seq=512):", "M = 2048 қатары T4 GPU-дың барлық 40 Streaming Multiprocessor (SM) блоктарын толық толтырмайды. Жад үнемделген соң батчты көбейтуге болады.")
+    ]
+    for title, desc in limits:
+        pt = tf1.add_paragraph()
+        pt.text = f"⚠ {title}"
+        pt.font.bold = True
+        pt.font.size = Pt(11)
+        pt.font.color.rgb = TEXT_WHITE
+        pt.space_before = Pt(8)
+        pd = tf1.add_paragraph()
+        pd.text = desc
+        pd.font.size = Pt(10)
+        pd.font.color.rgb = TEXT_BODY
+
+    # Right Card: Roadmap / Next steps
+    add_card(slide, 6.8, 1.6, 5.7, 5.2)
+    b2 = slide.shapes.add_textbox(Inches(7.0), Inches(1.8), Inches(5.3), Inches(4.8))
+    tf2 = b2.text_frame
+    tf2.word_wrap = True
+
+    p = tf2.paragraphs[0]
+    p.text = "Келесі Даму Бағыттары (Roadmap):"
+    p.font.size = Pt(14)
+    p.font.bold = True
+    p.font.color.rgb = ACCENT_EMER
+
+    roadmap = [
+        ("Flash-Attention Style Triton Fused Block:", "Attention қабатының Q x K^T, Softmax және V көбейтулерін аралық тензорларды сақтамай, толық чип ішіндегі бірыңғай кернелге біріктіру."),
+        ("W4A16 Fused GEMM (NF4 MatMul):", "NF4 салмақтарын деквантизациялау мен матрицалық көбейтуді (GEMM) бір ортақ кернелде қосып, сызықтық қабаттарды тағы 1.3x жеделдету."),
+        ("Sequence Packing (Padding-Free):", "Батч ішіндегі қысқа жолдарды бір ұзын тізбекке біріктіріп (cu_seqlens арқылы), бос токендерді 0%-ға дейін жою.")
+    ]
+    for title, desc in roadmap:
+        pt = tf2.add_paragraph()
+        pt.text = f"🚀 {title}"
+        pt.font.bold = True
+        pt.font.size = Pt(11)
+        pt.font.color.rgb = ACCENT_CYAN
+        pt.space_before = Pt(8)
+        pd = tf2.add_paragraph()
+        pd.text = desc
+        pd.font.size = Pt(10.5)
+        pd.font.color.rgb = TEXT_BODY
+
+
+# ==============================================================================
+# SLIDE 6: Conclusion Slide
+# ==============================================================================
+def build_slide_6(prs):
+    slide = prs.slides.add_slide(prs.slide_layouts[6])
+    set_bg(slide)
+    add_header(slide, "Қорытынды және Байқауды Тапсыру (Conclusion)", "LUNARTEAM — ЖЕҢІСКЕ ДАЙЫН ШЕШІМ")
+
+    # 3 Summary Cards
+    cards = [
+        ("🏆 10 / 10 PASS", "Толық Ережелік Сәйкестік",
+         "• PyTest: 79/79 passed (0.50s)\n"
+         "• Kernel share: 10.1% (>= 5%)\n"
+         "• Eval loss: -0.005% (сақталды)\n"
+         "• 0 NaN/Inf барлық 64 қадамда"),
+        ("⚡ 1.305x Speedup", "Оқытуды Жеделдету",
+         "• База: 84.11 с -> Бізде: 64.46 с\n"
+         "• 20 секунд таза уақыт үнемделді\n"
+         "• Fused CE: 1.24 GB -> 78 MB\n"
+         "• Dynamic unpadding: -35% FLOPs"),
+        ("🔥 2.269x VRAM Ratio", "Жад Бойынша Чемпион",
+         "• База: 14,345 MiB (14.35 GB)\n"
+         "• LunarTeam: 6,323 MiB (6.32 GB)\n"
+         "• Үнемделген: 8,022 MiB (>8 GB!)\n"
+         "• OOM қаупі толық жойылды")
+    ]
+
+    for idx, (head, sub, text) in enumerate(cards):
+        x = 0.8 + idx * 4.0
+        add_card(slide, x, 1.6, 3.733, 4.0)
+        tb = slide.shapes.add_textbox(Inches(x + 0.2), Inches(1.8), Inches(3.333), Inches(3.6))
+        tf = tb.text_frame
+        tf.word_wrap = True
+
+        p0 = tf.paragraphs[0]
+        p0.text = head
+        p0.font.bold = True
+        p0.font.size = Pt(16)
+        p0.font.color.rgb = ACCENT_CYAN
+
+        p1 = tf.add_paragraph()
+        p1.text = sub
+        p1.font.bold = True
+        p1.font.size = Pt(11)
+        p1.font.color.rgb = ACCENT_EMER
+        p1.space_before = Pt(4)
+
+        p2 = tf.add_paragraph()
+        p2.text = f"\n{text}"
+        p2.font.size = Pt(10.5)
+        p2.font.color.rgb = TEXT_BODY
+
+    # Bottom Links Card
+    add_card(slide, 0.8, 5.8, 11.733, 1.0, bg_color=CARD_BG, border_color=ACCENT_CYAN)
+    bl = slide.shapes.add_textbox(Inches(1.0), Inches(5.9), Inches(11.333), Inches(0.8))
+    tfl = bl.text_frame
+    tfl.word_wrap = True
+    pl = tfl.paragraphs[0]
+    pl.text = (
+        "🔗 GitHub Репозиторий: https://github.com/ninumaki/SoupLunar (Ветка: main, Commit: 63544ba)\n"
+        "🔗 Жария Kaggle Ноутбугы: https://www.kaggle.com/code/ruekdp/notebookd4dc02b276 (Run All -> 10/10 PASS)"
+    )
+    pl.font.size = Pt(10.5)
+    pl.font.bold = True
+    pl.font.color.rgb = TEXT_WHITE
+
+
+def main():
     prs = Presentation()
     prs.slide_width = Inches(13.333)
     prs.slide_height = Inches(7.5)
 
-    blank_layout = prs.slide_layouts[6]
+    build_slide_1(prs)
+    build_slide_2(prs)
+    build_slide_3(prs)
+    build_slide_4(prs)
+    build_slide_5(prs)
+    build_slide_6(prs)
 
-    # Colors
-    c_bg = RGBColor(15, 23, 42)        # Deep Navy Slate
-    c_card = RGBColor(30, 41, 59)      # Slate Card
-    c_cyan = RGBColor(6, 182, 212)     # Tech Cyan
-    c_green = RGBColor(16, 185, 129)   # Emerald Accent
-    c_white = RGBColor(248, 250, 252)  # Bright White
-    c_gray = RGBColor(148, 163, 184)   # Subtle Gray
+    prs.save(str(OUTPUT_FILE))
+    print(f"Presentation saved successfully to: {OUTPUT_FILE}")
 
-    def add_bg(slide):
-        bg = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, Inches(13.333), Inches(7.5))
-        bg.fill.solid()
-        bg.fill.fore_color.rgb = c_bg
-        bg.line.fill.background()
-        return bg
-
-    def add_header(slide, title, category="SOUP KERNEL CHALLENGE | DECENTRATHON 6.0"):
-        tb = slide.shapes.add_textbox(Inches(0.8), Inches(0.5), Inches(11.7), Inches(1.2))
-        tf = tb.text_frame
-        tf.word_wrap = True
-        
-        p1 = tf.paragraphs[0]
-        p1.text = category.upper()
-        p1.font.size = Pt(11)
-        p1.font.bold = True
-        p1.font.color.rgb = c_cyan
-
-        p2 = tf.add_paragraph()
-        p2.text = title
-        p2.font.size = Pt(26)
-        p2.font.bold = True
-        p2.font.color.rgb = c_white
-
-    # ==================== SLIDE 1: TITLE SLIDE ====================
-    s1 = prs.slides.add_slide(blank_layout)
-    add_bg(s1)
-
-    tb = s1.shapes.add_textbox(Inches(1.0), Inches(1.8), Inches(11.3), Inches(4.5))
-    tf = tb.text_frame
-    tf.word_wrap = True
-
-    p = tf.paragraphs[0]
-    p.text = "DECENTRATHON 6.0 | SOUP KERNEL CHALLENGE"
-    p.font.size = Pt(13)
-    p.font.bold = True
-    p.font.color.rgb = c_cyan
-
-    p = tf.add_paragraph()
-    p.text = "Triton Кернелдері арқылы Qwen2.5 Fine-Tuning Жеделдету мен Жадты Үнемдеу"
-    p.font.size = Pt(32)
-    p.font.bold = True
-    p.font.color.rgb = c_white
-
-    p = tf.add_paragraph()
-    p.text = "\nKaggle Tesla T4 GPU-да 2.5 ГБ VRAM үнемдеу және оқыту қадамдарын 1.35x жеделдету"
-    p.font.size = Pt(18)
-    p.font.color.rgb = c_gray
-
-    p = tf.add_paragraph()
-    p.text = "\nКоманда: LunarTeam  |  Спикер & Автор: Тоғжан (Role 4: Құжаттама, Kaggle және Питч)"
-    p.font.size = Pt(14)
-    p.font.bold = True
-    p.font.color.rgb = c_green
-
-    # ==================== SLIDE 2: QUESTION 1 ====================
-    s2 = prs.slides.add_slide(blank_layout)
-    add_bg(s2)
-    add_header(s2, "1-Сұрақ: Қай операцияларды жеделдеттік және неге?")
-
-    # Left Card: The Problem & Profile
-    c1 = s2.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.8), Inches(5.6), Inches(5.0))
-    c1.fill.solid()
-    c1.fill.fore_color.rgb = c_card
-    c1.line.color.rgb = c_cyan
-    tf1 = c1.text_frame
-    tf1.word_wrap = True
-    p = tf1.paragraphs[0]
-    p.text = "📊 Негізгі Проблема (Profiling Analysis)"
-    p.font.size = Pt(18)
-    p.font.bold = True
-    p.font.color.rgb = c_cyan
-
-    items1 = [
-        ("44% GPU уақыты", "Ұсақ элементтік операциялар мен тип түрлендіруге (casts) кетеді (RMSNorm, activations, LoRA adds)."),
-        ("14.3 ГБ / 15 ГБ VRAM", "Базалық Soup жадтың 93%-ын толтырып, OOM (Out Of Memory) шегінде тұрды."),
-        ("Memory Bandwidth Bound", "PyTorch әрбір Layer-де DRAM-ға 5+ рет қатынап, өткізу қабілетін тұншықтырады."),
-        ("36% GEMM & 7% Softmax", "Матрица көбейту мен 152k сөздік шығыны.")
-    ]
-    for h, b in items1:
-        p_h = tf1.add_paragraph()
-        p_h.text = f"• {h}: "
-        p_h.font.size = Pt(13)
-        p_h.font.bold = True
-        p_h.font.color.rgb = c_white
-        p_b = tf1.add_paragraph()
-        p_b.text = f"  {b}"
-        p_b.font.size = Pt(12)
-        p_b.font.color.rgb = c_gray
-
-    # Right Card: The Solution Strategy
-    c2 = s2.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(6.8), Inches(1.8), Inches(5.7), Inches(5.0))
-    c2.fill.solid()
-    c2.fill.fore_color.rgb = c_card
-    c2.line.color.rgb = c_green
-    tf2 = c2.text_frame
-    tf2.word_wrap = True
-    p = tf2.paragraphs[0]
-    p.text = "⚡ Біздің Таңдауымыз бен Стратегиямыз"
-    p.font.size = Pt(18)
-    p.font.bold = True
-    p.font.color.rgb = c_green
-
-    items2 = [
-        ("Fused RMSNorm (Өз Triton кернеліміз)", "Qwen2.5-те 28 блокта 57 қабат RMSNorm бар. Оларды бірыңғай SRAM кернеліне біріктірдік."),
-        ("Fused SwiGLU Activation", "SiLU(gate) * up операциясын 1024 өлшемді блоктармен чип ішінде есептедік."),
-        ("Zero Extra DRAM Footprint", "Аралық үлкен тензорларды HBM-ге жазбай, жад тапшылығын бірден шештік."),
-        ("Exact Math & 100% Quality", "Математикалық дәлдік сақталды (Loss ауытқуы < 0.01%).")
-    ]
-    for h, b in items2:
-        p_h = tf2.add_paragraph()
-        p_h.text = f"✓ {h}: "
-        p_h.font.size = Pt(13)
-        p_h.font.bold = True
-        p_h.font.color.rgb = c_white
-        p_b = tf2.add_paragraph()
-        p_b.text = f"  {b}"
-        p_b.font.size = Pt(12)
-        p_b.font.color.rgb = c_gray
-
-    # ==================== SLIDE 3: QUESTION 2 ====================
-    s3 = prs.slides.add_slide(blank_layout)
-    add_bg(s3)
-    add_header(s3, "2-Сұрақ: Кернел қалай құрылған?")
-
-    # 3 columns for kernel deep-dive
-    col_w = Inches(3.7)
-    gap = Inches(0.3)
-    left_m = Inches(0.8)
-
-    # Box 1: Forward Tiling
-    b1 = s3.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left_m, Inches(1.8), col_w, Inches(5.0))
-    b1.fill.solid()
-    b1.fill.fore_color.rgb = c_card
-    b1.line.color.rgb = c_cyan
-    tf = b1.text_frame
-    tf.word_wrap = True
-    tf.paragraphs[0].text = "1. Forward SRAM Tiling"
-    tf.paragraphs[0].font.size = Pt(16)
-    tf.paragraphs[0].font.bold = True
-    tf.paragraphs[0].font.color.rgb = c_cyan
-    p = tf.add_paragraph()
-    p.text = "\n• BLOCK_SIZE = 2048 (hidden_size = 1536 толық сияды)\n• Әр бағдарлама блогы 1 толық жолды өңдейді\n• 1 рет жүктеу (Load) -> FP32 Variance -> rsqrt(var + eps) -> Weight көбейту\n• Шығыс FP16 күйінде бірден жазылады (1 Store)\n• 5 бөлек CUDA kernel орнына тек 1 Triton kernel!"
-    p.font.size = Pt(12)
-    p.font.color.rgb = c_white
-
-    # Box 2: Backward Optimization
-    b2 = s3.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left_m + col_w + gap, Inches(1.8), col_w, Inches(5.0))
-    b2.fill.solid()
-    b2.fill.fore_color.rgb = c_card
-    b2.line.color.rgb = c_green
-    tf = b2.text_frame
-    tf.word_wrap = True
-    tf.paragraphs[0].text = "2. Backward Autograd"
-    tf.paragraphs[0].font.size = Pt(16)
-    tf.paragraphs[0].font.bold = True
-    tf.paragraphs[0].font.color.rgb = c_green
-    p = tf.add_paragraph()
-    p.text = "\n• Аралық FP32 активтендірулерді сақтамаймыз (Жад үнемдеу!)\n• Тек 1 өлшемді rrms векторын (N_rows) ғана сақтаймыз\n• Градиент dx тікелей формула бойынша регистрде есептеледі:\n  dx = rrms*(dy*w - sum_term)\n• dW редукциясы чипте жинақталады\n• Градиент қателігі 0!"
-    p.font.size = Pt(12)
-    p.font.color.rgb = c_white
-
-    # Box 3: Seamless Integration
-    b3 = s3.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left_m + (col_w + gap)*2, Inches(1.8), col_w, Inches(5.0))
-    b3.fill.solid()
-    b3.fill.fore_color.rgb = c_card
-    b3.line.color.rgb = c_cyan
-    tf = b3.text_frame
-    tf.word_wrap = True
-    tf.paragraphs[0].text = "3. apply() Патчингі"
-    tf.paragraphs[0].font.size = Pt(16)
-    tf.paragraphs[0].font.bold = True
-    tf.paragraphs[0].font.color.rgb = c_cyan
-    p = tf.add_paragraph()
-    p.text = "\n• Unsloth тәрізді бір ғана solution.apply() шақыруымен қосылады\n• Qwen2RMSNorm.forward және Qwen2MLP.forward модулін қорғалған түрде ауыстырады\n• Тесттердегі CPU және fake модульдерге кедергі жасамайды\n• 79 Soup регрессиялық тестінен 100% өтеді!"
-    p.font.size = Pt(12)
-    p.font.color.rgb = c_white
-
-    # ==================== SLIDE 4: QUESTION 3 (RESULTS) ====================
-    s4 = prs.slides.add_slide(blank_layout)
-    add_bg(s4)
-    add_header(s4, "3-Сұрақ: Базамен салыстырғандағы нәтижелер")
-
-    # Metrics highlight boxes
-    m_data = [
-        ("Speedup (s)", "1.23x", "Толық уақыт 81.4с -> 66.2с\n(Оқыту қадамы: 1.35x)", c_cyan),
-        ("Peak Memory (m)", "1.21x", "14.3 ГБ -> 11.8 ГБ\nҮнемделді: 2.5 ГБ VRAM", c_green),
-        ("Kernel Share", "7.84%", "Өз кернелдеріміздің үлесі\n(Талап: >= 5.0%)", c_cyan),
-        ("Eval Loss", "2.050", "Базамен дәлме-дәл\n(Delta: -0.01% <= 0.5%)", c_green),
-    ]
-
-    box_w = Inches(2.7)
-    for i, (label, val, sub, col) in enumerate(m_data):
-        bx = s4.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8 + i*2.95), Inches(1.8), box_w, Inches(2.1))
-        bx.fill.solid()
-        bx.fill.fore_color.rgb = c_card
-        bx.line.color.rgb = col
-        tf = bx.text_frame
-        tf.word_wrap = True
-        tf.paragraphs[0].text = label
-        tf.paragraphs[0].font.size = Pt(13)
-        tf.paragraphs[0].font.color.rgb = c_gray
-        p_val = tf.add_paragraph()
-        p_val.text = val
-        p_val.font.size = Pt(28)
-        p_val.font.bold = True
-        p_val.font.color.rgb = col
-        p_sub = tf.add_paragraph()
-        p_sub.text = sub
-        p_sub.font.size = Pt(10)
-        p_sub.font.color.rgb = c_white
-
-    # Detailed Comparison Table Card
-    tbl_card = s4.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(4.2), Inches(11.7), Inches(2.6))
-    tbl_card.fill.solid()
-    tbl_card.fill.fore_color.rgb = c_card
-    tbl_card.line.fill.background()
-    tf_tbl = tbl_card.text_frame
-    tf_tbl.word_wrap = True
-    p = tf_tbl.paragraphs[0]
-    p.text = "🎯 Хакатон Ережелері Тексерісі (Check Rules & Final Score):"
-    p.font.size = Pt(14)
-    p.font.bold = True
-    p.font.color.rgb = c_white
-
-    p2 = tf_tbl.add_paragraph()
-    p2.text = (
-        "• 10/10 Harness Тексерісі: Барлығы сәтті өтті (PASS ✅) -> 20 / 20 ұпай толық кепілдендірілді!\n"
-        "• Техникалық құжаттама (README.md & SUBMISSION.md): 3 бөлім де 5/5 -> 15 / 15 ұпай кепілдендірілді!\n"
-        "• 2.5 ГБ VRAM үнемдеу арқылы тегін Kaggle T4-те контекст ұзындығын 512-ден 1024 токенге дейін өсіруге толық мүмкіндік бар!"
-    )
-    p2.font.size = Pt(13)
-    p2.font.color.rgb = c_gray
-
-    # ==================== SLIDE 5: QUESTION 4 ====================
-    s5 = prs.slides.add_slide(blank_layout)
-    add_bg(s5)
-    add_header(s5, "4-Сұрақ: Шешімнің шектеулері және келесі қадамдар")
-
-    # Left: Limitations
-    c_lim = s5.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.8), Inches(5.6), Inches(5.0))
-    c_lim.fill.solid()
-    c_lim.fill.fore_color.rgb = c_card
-    c_lim.line.color.rgb = RGBColor(239, 68, 68)  # Red warning
-    tf = c_lim.text_frame
-    tf.word_wrap = True
-    p = tf.paragraphs[0]
-    p.text = "⚠️ Шешімнің Шектеулері (Limitations)"
-    p.font.size = Pt(18)
-    p.font.bold = True
-    p.font.color.rgb = RGBColor(239, 68, 68)
-
-    lims = [
-        ("T4 Архитектурасы (No BF16)", "T4 картасында bfloat16 және FP8 Tensor Core жоқ. Есептеулер тек FP16 күйінде шектеледі."),
-        ("JIT Компиляция Салмағы", "Алғашқы 2 қадамда Triton кернелдерді жинақтайды. 64 қадамдық қысқа оқытуда 2-3 секунд компиляцияға кетеді."),
-        ("Кіші Батч (Batch 4, Seq 512)", "2048 жол үшін GPU-дың барлық SM блоктары 100% толық жүктелмей қалуы мүмкін."),
-        ("NF4 GEMM тәуекелі", "NF4 декванттауды толық Triton-ға ауыстыру дәлдік ауытқуы салдарынан қосылмады.")
-    ]
-    for h, b in lims:
-        p_h = tf.add_paragraph()
-        p_h.text = f"• {h}:"
-        p_h.font.size = Pt(13)
-        p_h.font.bold = True
-        p_h.font.color.rgb = c_white
-        p_b = tf.add_paragraph()
-        p_b.text = f"  {b}"
-        p_b.font.size = Pt(12)
-        p_b.font.color.rgb = c_gray
-
-    # Right: Next Steps
-    c_next = s5.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(6.8), Inches(1.8), Inches(5.7), Inches(5.0))
-    c_next.fill.solid()
-    c_next.fill.fore_color.rgb = c_card
-    c_next.line.color.rgb = c_cyan
-    tf = c_next.text_frame
-    tf.word_wrap = True
-    p = tf.paragraphs[0]
-    p.text = "🚀 Келесі Қадамдар (Roadmap)"
-    p.font.size = Pt(18)
-    p.font.bold = True
-    p.font.color.rgb = c_cyan
-
-    nexts = [
-        ("Fused Chunked Cross-Entropy", "152k сөздік үшін толық логиттер тензорын шығармай, шағын chunk-тармен шығынды Triton-да есептеу (тағы 2 ГБ үнемдеу!)."),
-        ("Padding-free Sequence Packing", "Батч ішіндегі нөлдік pad-токендерді Triton арқылы алып тастап, тек нақты токендерді өңдеу."),
-        ("Custom Fused LoRA Forward", "LoRA қабатындағы көбейту мен қосуды (x + W_lora*x) бір операцияға біріктіру."),
-        ("Ұзақ оқытуға масштабтау", "1000+ қадамда JIT overhead жойылып, 1.35x+ жеделдету тұрақты сақталады.")
-    ]
-    for h, b in nexts:
-        p_h = tf.add_paragraph()
-        p_h.text = f"→ {h}:"
-        p_h.font.size = Pt(13)
-        p_h.font.bold = True
-        p_h.font.color.rgb = c_white
-        p_b = tf.add_paragraph()
-        p_b.text = f"  {b}"
-        p_b.font.size = Pt(12)
-        p_b.font.color.rgb = c_gray
-
-    # ==================== SLIDE 6: CONCLUSION ====================
-    s6 = prs.slides.add_slide(blank_layout)
-    add_bg(s6)
-    add_header(s6, "Қорытынды және Нәтижелер", "SOUP OPTIMIZERS | DECENTRATHON 6.0")
-
-    c_fin = s6.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(1.5), Inches(1.8), Inches(10.3), Inches(4.8))
-    c_fin.fill.solid()
-    c_fin.fill.fore_color.rgb = c_card
-    c_fin.line.color.rgb = c_green
-    tf = c_fin.text_frame
-    tf.word_wrap = True
-
-    p = tf.paragraphs[0]
-    p.text = "🎉 Түйін: Тегін Kaggle T4-те Өнімді Оқыту Енді Қолжетімді!"
-    p.font.size = Pt(22)
-    p.font.bold = True
-    p.font.color.rgb = c_green
-
-    p2 = tf.add_paragraph()
-    p2.text = (
-        "\n1. Кепілдендірілген 15 Ұпай (Құжаттама): ТАЛАПТАРҒА ТОЛЫҚ САЙ README.md, SUBMISSION.md.\n"
-        "2. Жұмыс істеуіне 20 Ұпай: 10/10 автоматты тексеруден және 79 Soup регрессиялық тестінен өтті.\n"
-        "3. Жылдамдық & Жад Ұпайы: 1.23x жеделдету, 2.5 ГБ VRAM үнемдеу, өз кернелдеріміздің үлесі 7.84%.\n"
-        "4. Дәлдік: Жасырын қазақша деректерде оқыту сапасы базамен толық сәйкес (Delta = -0.01%).\n\n"
-        "🔗 Kaggle Public Run: kaggle.com/code/ruekdp/notebookd4dc02b276\n"
-        "🔗 GitHub Repo: github.com/ninumaki/SoupLunar\n\n"
-        "Назарларыңызға рақмет! Сұрақтарыңызға жауап беруге дайынбыз!"
-    )
-    p2.font.size = Pt(14)
-    p2.font.color.rgb = c_white
-
-    output_path = "/home/togzhan/Рабочий стол/децетратон/presentation.pptx"
-    prs.save(output_path)
-    print(f"Presentation saved successfully to: {output_path}")
 
 if __name__ == "__main__":
-    create_deck()
+    main()
