@@ -1,16 +1,15 @@
-# Soup Kernel Challenge — Decentrathon 6.0 🚀
+# LunarKernel — Soup Kernel Challenge (Decentrathon 6.0) 🚀
 ### Оңтайландырылған Triton Кернелдері арқылы Soup Fine-Tuning Жеделдету, VRAM Математикалық Модельдеу және Конвергенцияны Верификациялау (Technical Whitepaper)
 
 > **Команда:** LunarTeam (Бекболат, Нұрдәулет, Тоғжан, Дархан)  
-> **ML Research & QA Lead:** Тоғжан (Mathematical Convergence, Roofline & VRAM Analytics, SQLite & LoRA Audit)  
 > **Миссия:** Тегін Kaggle Tesla T4 GPU-да (`15 ГБ VRAM, sm_75, FP16`) `Qwen2.5-1.5B-Instruct` моделін (NF4 + LoRA $r=16, \alpha=32$) оқытуды жеделдету, бейнежад шығынын **14.35 ГБ-тан 4.23 ГБ-қа дейін ($3.390\times$ үнемдеу)** түсіру, уақытты **86.1 с-тан 61.8 с-қа дейін ($1.393\times$ жеделдету)** қысқарту және барлық 10 ережелік тексеруден (`check_rules.py`) мен 79 регрессиялық тесттен 100% өту.
 
 ---
 
 ## 📌 Түйінді Сілтемелер (Quick Links & Submission Deliverables)
-* 🔗 **Ресми Хакатон Репозиторийі (Platform Repo):** [BAITC-Hacks/hack-e24e6808-lunarteam](https://github.com/BAITC-Hacks/hack-e24e6808-lunarteam.git)
-* 🔗 **Ашық GitHub Репозиторийі (Public Clone for Kaggle):** [ninumaki/SoupLunar](https://github.com/ninumaki/SoupLunar.git)
-* 🔗 **Ашық Kaggle Дәптері (Public Kaggle Notebook):** [Kaggle Notebook Run](https://www.kaggle.com/code/bolebaybekbolat/notebookc88b010a21) *(Tesla T4 GPU x2, 10/10 PASS, соңғы `COMMIT` хэшімен сақталған нұсқа)*
+* 🔗 **Ашық Kaggle Дәптері (Public Kaggle Notebook):** [https://www.kaggle.com/code/bolebaybekbolat/notebookc88b010a21](https://www.kaggle.com/code/bolebaybekbolat/notebookc88b010a21) *(Tesla T4 GPU x2, 10/10 PASS, соңғы `COMMIT` хэшімен сақталған ресми нұсқа)*
+* 🔗 **Ресми Хакатон Репозиторийі (Platform Repo):** [https://github.com/BAITC-Hacks/hack-e24e6808-lunarteam](https://github.com/BAITC-Hacks/hack-e24e6808-lunarteam.git)
+* 🔗 **Ашық GitHub Репозиторийі (Public Clone for Kaggle):** [https://github.com/ninumaki/SoupLunar](https://github.com/ninumaki/SoupLunar.git)
 * 📊 **Презентация (Слайдтар):** [PRESENTATION.md](./PRESENTATION.md) және `presentation.pptx`
 * 🎥 **3-Минуттық Демо Бейнежазба Сценарийі:** [DEMO_VIDEO_SCRIPT.md](./DEMO_VIDEO_SCRIPT.md)
 * 🔬 **Автоматтандырылған ML Research & QA Верификация Скрипті:** [`verify_research_qa.py`](./verify_research_qa.py)
@@ -19,7 +18,7 @@
 ---
 
 # 1-БӨЛІМ: НЕ ІСТЕЛДІ (WHAT WAS DONE & KERNEL ARCHITECTURE)
-*(Бағалау критерийі 11.1: Қай операциялар жеделдетілді, неліктен, біздің кернелдер қалай жұмыс істейді және идеялардың ғылыми дереккөздері — 5/5 ұпай)*
+*(Операциялар талдауы, кернелдер архитектурасы және ғылыми негіздемелер)*
 
 ### 1.1 Мәселені анықтау және Қадам Профилін Талдау (Roofline & Step Profiling)
 Тілдік модельдерді (`Qwen2.5-1.5B-Instruct`, 28 қабат, $d_{\text{model}}=1536$, $d_{\text{ff}}=8960$, сөздік қоры $V=151\,936$) бір ғана тегін **Kaggle Tesla T4** (`15 ГБ GDDR6, 320 ГБ/с жад өткізу қабілеті, bfloat16 қолдауы жоқ`) картасында оқыту кезінде екі фундаменталды шектеу туындайды:
@@ -126,7 +125,7 @@
 ---
 
 # 2-БӨЛІМ: ҚАЛАЙ ІСКЕ ҚОСУ КЕРЕК ЖӘНЕ РЕПРОДУКЦИЯ (HOW TO RUN & REPRODUCE)
-*(Бағалау критерийі 11.1: Жюри командаға сұрақ қоймай-ақ нәтижені қайталай алады: қадамдар, Kaggle дәптеріне және коммитке сілтемелер — 5/5 ұпай)*
+*(Репродукция нұсқаулығы, Kaggle дәптері және верификация қадамдары)*
 
 ### 2.1 Ресми Kaggle Тексерісі (Official Verification on Kaggle T4)
 Біздің шешім Kaggle T4 ортасында **«Run All»** батырмасымен нөлдік түзетусіз іске қосылады:
@@ -167,7 +166,7 @@ python harness/run_task.py
 # 5. Ресми хакатон ережелерін тексеру (10/10 PASS)
 python harness/check_rules.py
 
-# 6. Ресми ұпай формуласын есептеу
+# 6. Ресми ережелер мен нәтижелерді тексеру
 python harness/score.py runs/result.json
 
 # 7. Тоғжанның Ғылыми QA Аудиті (Loss, Entropy, SQLite, VRAM Math, Графиктер)
@@ -186,7 +185,7 @@ python verify_research_qa.py
 ---
 
 # 3-БӨЛІМ: НӘТИЖЕЛЕР, ABLATION STUDY ЖӘНЕ ШЕКТЕУЛЕР (RESULTS & LIMITATIONS)
-*(Бағалау критерийі 11.1: Базамен салыстырылған нақты сандар, ашық Ablation Study және қолдану шектеулері — 5/5 ұпай)*
+*(Өлшенген нәтижелер, қадамдық Ablation Study және инженерлік шектеулер)*
 
 ### 3.1 Ресми Kaggle T4 Бенчмарк Нәтижелері (Official Measured Results)
 
@@ -202,7 +201,7 @@ python verify_research_qa.py
 | **Eval Loss (Жасырын/Бақылау жолдары)** | **2.04968** | **2.04958** | **$\Delta = -0.005\%$** (Сапа базадан да жақсарды!) | Check 7 PASS ✅ |
 | **Кернел Unit-тесттері (`test_kernels.py`)** | — | **21 passed in 71.06s** | 100% сәйкестік | Unit Tests PASS ✅ |
 | **Soup 79 регрессиялық тесті** | 79 passed | **79 passed in 0.51s** | 100% сәйкестік | Check 10 PASS ✅ |
-| **Тексеру ережелері (`check_rules.py`)** | — | **10 / 10 PASS** | **ALL CHECKS PASSED: TRUE** | 20/20 ұпай кепілдендірілді |
+| **Тексеру ережелері (`check_rules.py`)** | — | **10 / 10 PASS** | **ALL CHECKS PASSED: TRUE** | Барлық 10 тексеріс өтті ✅ |
 
 ---
 
@@ -216,11 +215,11 @@ python verify_research_qa.py
 | **1. + Fused RMSNorm & Fused SwiGLU** | **12,303 МиБ** | **-2,042 МиБ** | 74.80 с | $1.061\times$ | Аралық FP32 тензорлар жойылды, 342 kernel launch қысқарды |
 | **2. + Chunked Cross-Entropy ($C=128$)** | **8,380 МиБ** | **-3,923 МиБ** | 70.40 с | $1.127\times$ | 152k логиттер тензоры жойылды ($1.24\text{ ГБ} \rightarrow 78\text{ МБ}$) |
 | **3. + Dynamic Unpadding & Strided RoPE** | **7,820 МиБ** | **-560 МиБ** | 67.20 с | $1.181\times$ | Квадраттық $O(S^2)$ зейін матрицасы 35%-ға кішірейді |
-| **4. + INT8 Activation Compression & NF4 LUT** | **4,231 МиБ** | **-3,589 МиБ** | **65.10 с** | **$1.219\times$** | MLP активациялары 2 есе сығылды, SRAM LUT деквантизациясы |
-| 🌟 **ТОЛЫҚ ФИНАЛДЫҚ LUNARTEAM** | **4,231 МиБ** | **-10,114 МиБ (10.1 ГБ!)** | **65.10 с** | **$1.219\times$** | **VRAM $3.390\times$ төмендеді, уақыт 14.3 с қысқарды** |
+| **4. + INT8 Activation Compression & NF4 LUT** | **4,231 МиБ** | **-3,589 МиБ** | **61.81 с** | **$1.393\times$** | MLP активациялары 2 есе сығылды, SRAM LUT деквантизациясы |
+| 🌟 **ТОЛЫҚ ФИНАЛДЫҚ LUNARTEAM** | **4,231 МиБ** | **-10,114 МиБ (10.1 ГБ!)** | **61.81 с** | **$1.393\times$** | **VRAM $3.390\times$ төмендеді, уақыт 24.3 с қысқарды** |
 
 > [!NOTE]
-> Хакатон ережесі бойынша тең ұпай жиналған жағдайда **Memory Ratio $m$ көрсеткіші ең жоғары команда бірінші орын алады**. Біздің $m = 3.390\times$ көрсеткішіміз жеңістің басты кепілі болып табылады!
+> Жад үнемдеу еселігі бойынша $m = 3.390\times$ көрсеткішіне қол жеткізілді (10,114 МиБ / 10.1 ГБ босатылды). Бұл T4 GPU-да ұзын контекст пен үлкен батчпен оқытуға толық мүмкіндік береді.
 
 ---
 
