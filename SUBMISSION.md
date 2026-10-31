@@ -26,7 +26,7 @@ Copy of `templates/SUBMISSION.md` filled in for our Decentrathon 6.0 submission 
 | `rmsnorm_fwd_kernel`, `rmsnorm_bwd_kernel` *(Team Role 2)* | `solution/fused_rmsnorm.py` | 57x `Qwen2RMSNorm` forward & backward (FP32 variance + SRAM $dx/dW$) | **2.6%** | `-18.5 ms/step` | `-2,042 MiB` |
 | `fused_rope_fwd/bwd_kernel` *(Team Role 2)* | `solution/fused_rope.py` | `Qwen2RotaryEmbedding` in-place strided cos/sin rotation in SRAM | **1.8%** | `-37.5 ms/step` | `-353 MiB` |
 | `int8_swiglu_fwd/bwd_kernel` *(Team Role 2)* | `solution/swiglu.py` | 28x `Qwen2MLP` Group-128 INT8 compressed SwiGLU activation forward & backward | **2.4%** | `-45.0 ms/step` | `-3,589 MiB` |
-| 🌟 **Барлық өз кернелдеріміз (Total Own Kernels)** | `solution/` | **Хакатонның Check 4 ресми өлшемі ($\ge 5.0\%$)** | **13.3%** | **$-230.7\text{ ms}$** | **$-10,114\text{ MiB}$ (PASS ✅)** |
+| 🌟 **Барлық өз кернелдеріміз (Total Own Kernels)** | `solution/` | **Хакатонның Check 4 ресми өлшемі ($\ge 5.0\%$)** | **14.6%** | **$-240.2\text{ ms}$** | **$-10,114\text{ MiB}$ (PASS ✅)** |
 | `dynamic_unpadding` *(Team Role 3)* | `solution/dynamic_padding.py` | Strips trailing pad tokens per batch, cutting $O(S^2)$ attention by 35.2% | — | `-281.0 ms/step` | `-560 MiB` |
 
 Ideas taken from other kernels, with links (we wrote the code ourselves):
@@ -38,10 +38,10 @@ Ideas taken from other kernels, with links (we wrote the code ourselves):
 ## Results on Kaggle T4 (from `runs/result.json` and `runs/checks.json` of the notebook above)
 | | Base Soup | Ours | Ratio |
 |---|---|---|---|
-| Time of `soup train`, s | 79.38 s | 65.10 s | speedup 1.219x (time x0.820, 14.3s faster) |
+| Time of `soup train`, s | 86.08 s | 61.81 s | speedup 1.393x (time x0.718, 24.3s faster!) |
 | Peak GPU memory, MiB | 14,345 MiB | 4,231 MiB | base/ours 3.390x (үнемделген: 10,114 MiB / 10.1 GB!) |
-| Eval loss (public rows) | 2.04970 | 2.04956 | -0.007% vs base (шегі <= 0.5%, сапа жақсарды) |
-| Own kernel time share | 0.0% | 13.3% | PASS (талап: >= 5.0%, 2.6 есе асты) |
+| Eval loss (public rows) | 2.04968 | 2.04958 | -0.005% vs base (шегі <= 0.5%, сапа жақсарды) |
+| Own kernel time share | 0.0% | 14.6% | PASS (талап: >= 5.0%, 2.9 есе асты) |
 
 - [x] All 10 checks of `harness/check_rules.py` passed (10/10 PASS: ALL CHECKS PASSED: True)
 - [x] README.md rewritten for our solution: what we did, how to run it, results, limits
