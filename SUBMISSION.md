@@ -13,10 +13,10 @@ Copy of `templates/SUBMISSION.md` filled in for our Decentrathon 6.0 submission 
 ## Team (LunarTeam — 4 people)
 | Name | Role | GitHub | Kaggle | Contact (captain) |
 |---|---|---|---|---|
-| Бекболат (Bekbolat) | Техникалық Лид, Капитан & GPU Kernel Архитекторы (Fused Chunked Cross-Entropy & NF4 Dequant) | @bekbolat | @bekbolat | @bekbolat_tg (Captain) |
-| Тоғжан (Togzhan) | ML Research Engineer & Quality Assurance Lead (Convergence Math, VRAM Roofline, SQLite Audit & Whitepaper) | @ninumaki | @ruekdp | — |
-| Нұрдәулет (Nurdaulet) | Triton Element-Wise Kernels & Monkey-Patching Инженері (RMSNorm, SwiGLU, RoPE, `apply()`) | @nurdaulet | @nurdaulet | — |
-| Дархан (Darkhan) | Batch Optimization, Хакатон Harness & Тестілеу Инженері (Dynamic Padding, 79 PyTest, Rules) | @darkhan | @darkhan | — |
+| Бекболат (Bekbolat) | Техникалық Лид, Капитан & GPU Kernel Архитекторы (Fused Chunked Cross-Entropy & NF4 Dequant) | @BekbolatBolebay | @bolebaybekbolat | @bekbolat_tg (Captain) |
+| Нұрдәулет (Nurdaulet) | Triton Element-Wise Kernels & Monkey-Patching Инженері (RMSNorm, SwiGLU, RoPE, `apply()`) | @ninumaki | @nurdaulet | — |
+| Тоғжан (Togzhan) | ML Research Engineer & Quality Assurance Lead (Convergence Math, VRAM Roofline, SQLite Audit & Whitepaper) | @ruekdp | @ruekdp | — |
+| Дархан (Darkhan) | Batch Optimization, Хакатон Harness & Тестілеу Инженері (Dynamic Padding, 79 PyTest, Rules) | @Darkhan | @darkhan | — |
 
 ## Our kernels & Architectural Ablation Study
 | Kernel / Module (`@triton.jit`) | File | What it replaces | Share (Check 4) | Step Time Saved | VRAM Saved |
